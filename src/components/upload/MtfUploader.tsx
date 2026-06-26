@@ -23,6 +23,7 @@ export function MtfUploader({ files, onFile, onRemove }: MtfUploaderProps) {
               file={files[tf]!}
               timeframe={tf}
               onRemove={() => onRemove(tf)}
+              onCropChange={() => {}}
             />
           ) : (
             <DropZone

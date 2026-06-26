@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAnalysis } from '@/hooks/useAnalysis'
 import { useMtfAnalysis } from '@/hooks/useMtfAnalysis'
+import type { CropBox } from '@/types/crop'
 
 type Mode = 'single' | 'mtf'
 
@@ -22,6 +23,7 @@ export default function Home() {
   // Single mode state
   const [singleFile, setSingleFile] = useState<File | null>(null)
   const { result, error, isLoading, analyze, reset } = useAnalysis()
+  const [cropBox, setCropBox] = useState<CropBox | null>(null)
 
   // MTF mode state
   const [mtfFiles, setMtfFiles] = useState<Partial<Record<Timeframe, File>>>({})
@@ -37,13 +39,14 @@ export default function Home() {
     setMode(newMode)
     setSingleFile(null)
     setMtfFiles({})
+    setCropBox(null)
     reset()
     resetMtf()
   }
 
   const handleSingleAnalyze = useCallback(() => {
-    if (singleFile) analyze(singleFile)
-  }, [singleFile, analyze])
+    if (singleFile) analyze(singleFile, undefined, cropBox)
+  }, [singleFile, analyze, cropBox])
 
   const handleMtfAnalyze = useCallback(() => {
     if (Object.keys(mtfFiles).length > 0) analyzeMtf(mtfFiles)
@@ -112,13 +115,17 @@ export default function Home() {
       {mode === 'single' && (
         <div className="space-y-4">
           {singleFile ? (
-            <ChartPreview file={singleFile} onRemove={() => { setSingleFile(null); reset() }} />
+            <ChartPreview
+              file={singleFile}
+              onRemove={() => { setSingleFile(null); setCropBox(null); reset() }}
+              onCropChange={setCropBox}
+            />
           ) : (
             <DropZone onFile={setSingleFile} />
           )}
 
           {singleFile && !result && (
-            <Button onClick={handleSingleAnalyze} isLoading={isLoading} className="w-full">
+            <Button onClick={handleSingleAnalyze} isLoading={isLoading} disabled={cropBox === null} className="w-full">
               🔍 Analisis Chart
             </Button>
           )}
