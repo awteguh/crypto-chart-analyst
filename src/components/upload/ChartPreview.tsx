@@ -1,8 +1,7 @@
 // src/components/upload/ChartPreview.tsx
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import Image from 'next/image'
+import { useEffect, useState, useCallback } from 'react'
 import { CropOverlay } from './CropOverlay'
 import type { CropBox } from '@/types/crop'
 
@@ -16,8 +15,13 @@ interface ChartPreviewProps {
 const FULL_BOX: CropBox = { x1: 0, y1: 0, x2: 100, y2: 100 }
 
 export function ChartPreview({ file, timeframe, onRemove, onCropChange }: ChartPreviewProps) {
-  const url = useMemo(() => URL.createObjectURL(file), [file])
-  useEffect(() => () => URL.revokeObjectURL(url), [url])
+  // Buat blob URL sekali per file, revoke saat unmount atau file berubah
+  const [url, setUrl] = useState(() => URL.createObjectURL(file))
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(file)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [file])
   const [cropBox, setCropBox] = useState<CropBox>(FULL_BOX)
   const [autoBox, setAutoBox] = useState<CropBox>(FULL_BOX) // hasil detect
   const [detecting, setDetecting] = useState(true)
@@ -93,14 +97,12 @@ export function ChartPreview({ file, timeframe, onRemove, onCropChange }: ChartP
           ✕
         </button>
 
-        {/* Gambar */}
-        <Image
+        {/* Gambar — pakai img biasa karena src adalah blob URL */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={url}
           alt={`Chart ${timeframe || ''}`}
-          width={400}
-          height={250}
           className="w-full object-cover"
-          unoptimized
         />
 
         {/* State: detecting */}
