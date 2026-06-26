@@ -49,7 +49,10 @@ export default function Home() {
     if (Object.keys(mtfFiles).length > 0) analyzeMtf(mtfFiles)
   }, [mtfFiles, analyzeMtf])
 
-  const apiKeyMissing = error?.includes('API key') || mtfError?.includes('API key')
+  // Deteksi jika analisis jatuh ke rule-based (tidak ada API key vision yang valid)
+  const usedFallback =
+    result?.engine_used === 'rule-based' ||
+    Object.values(mtfResponse?.results ?? {}).some((r) => r?.engine_used === 'rule-based')
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -63,11 +66,21 @@ export default function Home() {
         </p>
       </div>
 
-      {/* API Key Warning */}
-      {apiKeyMissing && (
-        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 text-sm">
-          ⚠️ ANTHROPIC_API_KEY belum dikonfigurasi. Set di <code>.env.local</code> untuk analisis AI penuh.
-          Saat ini menggunakan rule-based fallback.
+      {/* Fallback Warning */}
+      {usedFallback && (
+        <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
+          ⚠️ Menggunakan analisis sederhana (rule-based) — garis pattern tidak tersedia.
+          Untuk deteksi pattern lengkap, set <code>GEMINI_API_KEY</code> (gratis) di{' '}
+          <code>.env.local</code>. Dapatkan di{' '}
+          <a
+            href="https://aistudio.google.com/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline font-semibold"
+          >
+            aistudio.google.com/apikey
+          </a>
+          , lalu restart server.
         </div>
       )}
 
@@ -117,7 +130,7 @@ export default function Home() {
             </div>
           )}
 
-          {error && !apiKeyMissing && (
+          {error && (
             <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 rounded-lg text-red-700 dark:text-red-300 text-sm">
               ❌ {error}
             </div>
@@ -164,7 +177,7 @@ export default function Home() {
             </div>
           )}
 
-          {mtfError && !apiKeyMissing && (
+          {mtfError && (
             <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 rounded-lg text-red-700 dark:text-red-300 text-sm">
               ❌ {mtfError}
             </div>

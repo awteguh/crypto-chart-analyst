@@ -58,8 +58,9 @@ export async function analyzeWithRuleBased(
     dump_probability: dumpProb,
     next_candle_bias: bias,
     summary:
-      'Analisis rule-based (fallback): berdasarkan estimasi warna candle. Akurasi terbatas.',
+      'Analisis rule-based (fallback): berdasarkan estimasi warna candle. Akurasi terbatas. Pastikan GEMINI_API_KEY atau OPENROUTER_API_KEY valid di .env.local, lalu restart server.',
     engine_used: 'rule-based',
+    overlay: null, // rule-based tidak bisa menghasilkan koordinat pattern
   }
 }
 

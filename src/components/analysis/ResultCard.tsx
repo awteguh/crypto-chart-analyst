@@ -7,6 +7,8 @@ import { PatternBadge } from './PatternBadge'
 import { PumpDumpMeter } from './PumpDumpMeter'
 import { SupportResistance } from './SupportResistance'
 import { SignalSummary } from './SignalSummary'
+import { ChartOverlayView } from './ChartOverlay'
+import { PatternReference } from './PatternReference'
 
 interface ResultCardProps {
   result: AnalysisResult
@@ -27,16 +29,27 @@ export function ResultCard({ result, imageUrl }: ResultCardProps) {
           </span>
           <Badge variant={trendVariant}>{result.trend}</Badge>
         </div>
-        {result.engine_used === 'rule-based' && (
+        {result.engine_used === 'rule-based' ? (
           <Badge variant="neutral">⚠️ Fallback</Badge>
+        ) : (
+          <Badge variant="info">
+            🤖 {
+              result.engine_used === 'gemini-vision' ? 'Gemini AI'
+              : result.engine_used === 'openrouter-vision' ? 'OpenRouter AI'
+              : 'Claude AI'
+            }
+          </Badge>
         )}
       </div>
 
-      {/* Preview gambar */}
-      {imageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="Chart" className="w-full rounded-lg object-cover max-h-48" />
-      )}
+      {/* Preview gambar — dengan overlay garis pattern jika tersedia */}
+      {imageUrl &&
+        (result.overlay ? (
+          <ChartOverlayView imageUrl={imageUrl} overlay={result.overlay} alt={`Chart ${result.timeframe}`} />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt="Chart" className="w-full rounded-lg object-cover max-h-48" />
+        ))}
 
       {/* Pump/Dump Meter */}
       <PumpDumpMeter
@@ -58,6 +71,9 @@ export function ResultCard({ result, imageUrl }: ResultCardProps) {
           </div>
         </div>
       )}
+
+      {/* Diagram referensi pattern */}
+      <PatternReference patterns={result.patterns} />
 
       {/* Indicators */}
       {result.indicators_detected.length > 0 && (

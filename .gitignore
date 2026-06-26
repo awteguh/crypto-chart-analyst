@@ -40,3 +40,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal tooling (tidak perlu di repo)
+.superpowers/
+docs/superpowers/
+
+# build output logs
+build-output.txt
+build2-output.txt
+dev-server.log
+dev-server-err.log
+
+# test files
+test-image.png
+test-chart.png
