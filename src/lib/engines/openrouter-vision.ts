@@ -5,7 +5,7 @@
 import type { AnalysisResult, MtfSynthesis } from '@/types/analysis'
 import { buildSingleChartPrompt } from '@/lib/prompts/single-chart'
 import { buildMtfSynthesisPrompt } from '@/lib/prompts/mtf-chart'
-import { validateConsistency } from './validate'
+import { validateConsistency, normalizeOverlay } from './validate'
 
 // Model list — gratis dan mendukung vision (image input).
 // "openrouter/free" = router otomatis OpenRouter, pilih model gratis yang tersedia saat itu.
@@ -140,15 +140,7 @@ export async function analyzeWithOpenRouter(
     throw new Error(parsed.error)
   }
 
-  if (!parsed.overlay) {
-    parsed.overlay = null
-  } else {
-    // Normalize arrow.direction — AI kadang mengembalikan "NEUTRAL" yang tidak valid.
-    const arrow = parsed.overlay.arrow
-    if (arrow && arrow.direction !== 'up' && arrow.direction !== 'down') {
-      parsed.overlay.arrow = null
-    }
-  }
+  parsed.overlay = normalizeOverlay(parsed.overlay ?? null)
   parsed.engine_used = 'openrouter-vision'
 
   return validateConsistency(parsed as AnalysisResult)

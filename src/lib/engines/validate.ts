@@ -4,7 +4,35 @@
 // AI kadang melaporkan pattern bearish tapi memberi pump_probability lebih tinggi,
 // atau next_candle_bias bertentangan dengan probabilitas. Fungsi ini memperbaikinya.
 
-import type { AnalysisResult } from '@/types/analysis'
+import type { AnalysisResult, ChartOverlay } from '@/types/analysis'
+
+/**
+ * Normalisasi overlay dari AI:
+ * - arrow.direction harus 'up' atau 'down' — jika tidak, hapus arrow
+ * - chart_bounds harus valid (0-100, x1<x2, y1<y2) — jika tidak, set null
+ */
+export function normalizeOverlay(overlay: ChartOverlay | null): ChartOverlay | null {
+  if (!overlay) return null
+
+  // Normalize arrow
+  const arrow = overlay.arrow
+  const validArrow =
+    arrow && (arrow.direction === 'up' || arrow.direction === 'down') ? arrow : null
+
+  // Normalize chart_bounds
+  const b = overlay.chart_bounds
+  const validBounds =
+    b &&
+    typeof b.x1 === 'number' && typeof b.y1 === 'number' &&
+    typeof b.x2 === 'number' && typeof b.y2 === 'number' &&
+    b.x1 < b.x2 && b.y1 < b.y2 &&
+    b.x1 >= 0 && b.y1 >= 0 && b.x2 <= 100 && b.y2 <= 100 &&
+    (b.x2 - b.x1) >= 10 && (b.y2 - b.y1) >= 10
+      ? b
+      : null
+
+  return { ...overlay, arrow: validArrow, chart_bounds: validBounds }
+}
 
 // Pattern bearish yang kuat (reversal atau continuation bearish)
 const BEARISH_PATTERNS = [

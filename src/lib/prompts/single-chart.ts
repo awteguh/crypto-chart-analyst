@@ -37,6 +37,7 @@ Analisis screenshot chart crypto ini secara mendetail dan kembalikan HANYA JSON 
   "summary": "Ringkasan analisis dalam 2-3 kalimat Bahasa Indonesia",
   "engine_used": "claude-vision",
   "overlay": {
+    "chart_bounds": { "x1": 0, "y1": 0, "x2": 100, "y2": 100 },
     "pattern_lines": [
       {
         "label": "nama garis, mis. Upper Trendline / Neckline / Lower Support",
@@ -56,18 +57,29 @@ Analisis screenshot chart crypto ini secara mendetail dan kembalikan HANYA JSON 
 }
 
 ATURAN KOORDINAT OVERLAY (SANGAT PENTING):
-- Semua koordinat dalam PERSEN 0-100 relatif terhadap ukuran gambar.
+- Semua koordinat dalam PERSEN 0-100 relatif terhadap ukuran SELURUH GAMBAR (bukan hanya area chart).
 - x: 0 = tepi kiri gambar, 100 = tepi kanan gambar.
 - y: 0 = tepi atas gambar, 100 = tepi bawah gambar. (y kecil = harga tinggi, y besar = harga rendah)
+
+LANGKAH PERTAMA — IDENTIFIKASI chart_bounds:
+- Perhatikan apakah gambar memiliki UI tambahan: header aplikasi, nama saham, tombol (Beli/Jual), tab (1D/1W/1M), watermark, atau panel lain di luar area chart.
+- Tentukan batas TEPAT area candlestick chart dalam PERSEN dari seluruh gambar:
+  * x1, y1 = sudut kiri-atas area chart (angka dalam 0-100)
+  * x2, y2 = sudut kanan-bawah area chart (angka dalam 0-100)
+- Jika chart mengisi seluruh gambar (TradingView fullscreen): chart_bounds = {"x1":0,"y1":0,"x2":100,"y2":100}
+- Jika ada header/UI di atas chart (mis. Stockbit, Investing.com): y1 bisa 20-35 tergantung ketebalan header
+- Contoh Stockbit dengan header tebal + tombol bawah: {"x1":2,"y1":28,"x2":98,"y2":73}
+
+SEMUA koordinat pattern_lines, price_levels, dan arrow HARUS dalam persen SELURUH GAMBAR (konsisten dengan chart_bounds).
 - "pattern_lines": gambar garis yang membentuk chart pattern yang kamu lihat. Contoh:
   * Double Top: dua puncak yang dihubungkan + neckline.
   * Head and Shoulders: garis menghubungkan bahu-kepala-bahu + neckline.
   * Triangle / Wedge / Flag / Pennant: dua garis trendline (atas & bawah) yang menyempit/melebar.
   * Letakkan titik (points) TEPAT mengikuti puncak/lembah candle yang relevan pada gambar.
-- "price_levels": garis horizontal. Entry di area masuk, TakeProfit di target, StopLoss di batas rugi.
-  Hanya sertakan level yang relevan; y sesuai posisi harga pada gambar.
+- "price_levels": garis horizontal. y sesuai posisi harga pada SELURUH GAMBAR (bukan area chart saja).
+  Hanya sertakan level yang relevan.
 - "arrow": panah prediksi arah harga SELANJUTNYA. direction HANYA boleh "up" (pump) atau "down" (dump) — TIDAK BOLEH "NEUTRAL".
-  Jika sideways/neutral, pilih arah yang lebih mungkin. Letakkan di sisi kanan gambar (x sekitar 80-98).
+  Jika sideways/neutral, pilih arah yang lebih mungkin. Letakkan di sisi kanan AREA CHART (x sekitar x2-5 sampai x2).
 
 Perhatikan:
 - patterns dan pattern_lines bisa array kosong [] jika tidak ada pattern signifikan.

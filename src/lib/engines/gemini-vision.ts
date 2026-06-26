@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai'
 import type { AnalysisResult, MtfSynthesis } from '@/types/analysis'
 import { buildSingleChartPrompt } from '@/lib/prompts/single-chart'
 import { buildMtfSynthesisPrompt } from '@/lib/prompts/mtf-chart'
-import { validateConsistency } from './validate'
+import { validateConsistency, normalizeOverlay } from './validate'
 
 // gemini-2.0-flash & gemini-1.5-flash: dihapus dari API (June 2026).
 // gemini-2.5-flash-lite: paling murah, free quota, sering 503 karena overload.
@@ -84,16 +84,7 @@ export async function analyzeWithGemini(
         throw new Error(parsed.error)
       }
 
-      if (!parsed.overlay) {
-        parsed.overlay = null
-      } else {
-        // Normalize arrow.direction — AI kadang mengembalikan "NEUTRAL" yang tidak valid.
-        // Jika bukan 'up' atau 'down', hapus arrow supaya ChartOverlay tidak render salah.
-        const arrow = parsed.overlay.arrow
-        if (arrow && arrow.direction !== 'up' && arrow.direction !== 'down') {
-          parsed.overlay.arrow = null
-        }
-      }
+      parsed.overlay = normalizeOverlay(parsed.overlay ?? null)
       parsed.engine_used = 'gemini-vision'
 
       return validateConsistency(parsed as AnalysisResult)

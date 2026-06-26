@@ -36,11 +36,23 @@ export interface DirectionArrow {
   direction: 'up' | 'down'
 }
 
+// Batas area chart candlestick dalam gambar (dalam persen 0-100).
+// Diperlukan jika gambar punya UI tambahan (header, tombol, watermark, dll)
+// sehingga area chart tidak mengisi seluruh gambar.
+// Contoh Stockbit: area chart mulai ~y=25% dan berakhir ~y=72%.
+export interface ChartBounds {
+  x1: number // tepi kiri area chart (biasanya ~0-5)
+  y1: number // tepi atas area chart (mis. 25 jika ada header)
+  x2: number // tepi kanan area chart (biasanya ~95-100)
+  y2: number // tepi bawah area chart (mis. 72 jika ada tombol di bawah)
+}
+
 // Semua elemen visual yang digambar di atas gambar chart.
 export interface ChartOverlay {
   pattern_lines: PatternLine[]
   price_levels: PriceLevel[]
   arrow: DirectionArrow | null
+  chart_bounds?: ChartBounds | null // null = chart mengisi seluruh gambar
 }
 
 export interface SRLevel {

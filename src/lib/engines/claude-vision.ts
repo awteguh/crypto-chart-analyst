@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { AnalysisResult, MtfSynthesis } from '@/types/analysis'
 import { buildSingleChartPrompt } from '@/lib/prompts/single-chart'
 import { buildMtfSynthesisPrompt } from '@/lib/prompts/mtf-chart'
-import { validateConsistency } from './validate'
+import { validateConsistency, normalizeOverlay } from './validate'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -46,15 +46,7 @@ export async function analyzeWithClaude(
     throw new Error(parsed.error)
   }
 
-  // Pastikan overlay selalu ada (null jika AI tidak mengembalikannya)
-  if (!parsed.overlay) {
-    parsed.overlay = null
-  } else {
-    const arrow = parsed.overlay.arrow
-    if (arrow && arrow.direction !== 'up' && arrow.direction !== 'down') {
-      parsed.overlay.arrow = null
-    }
-  }
+  parsed.overlay = normalizeOverlay(parsed.overlay ?? null)
 
   return validateConsistency(parsed as AnalysisResult)
 }
