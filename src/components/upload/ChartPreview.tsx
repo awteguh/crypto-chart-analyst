@@ -1,7 +1,7 @@
 // src/components/upload/ChartPreview.tsx
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { CropOverlay } from './CropOverlay'
 import type { CropBox } from '@/types/crop'
@@ -16,7 +16,8 @@ interface ChartPreviewProps {
 const FULL_BOX: CropBox = { x1: 0, y1: 0, x2: 100, y2: 100 }
 
 export function ChartPreview({ file, timeframe, onRemove, onCropChange }: ChartPreviewProps) {
-  const url = URL.createObjectURL(file)
+  const url = useMemo(() => URL.createObjectURL(file), [file])
+  useEffect(() => () => URL.revokeObjectURL(url), [url])
   const [cropBox, setCropBox] = useState<CropBox>(FULL_BOX)
   const [autoBox, setAutoBox] = useState<CropBox>(FULL_BOX) // hasil detect
   const [detecting, setDetecting] = useState(true)

@@ -28,16 +28,6 @@ export function CropOverlay({ cropBox, onChange, autoDetected }: CropOverlayProp
 
   const { x1, y1, x2, y2 } = cropBox
 
-  // Konversi event koordinat ke % relatif container
-  function toPercent(clientX: number, clientY: number): { px: number; py: number } {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return { px: 0, py: 0 }
-    return {
-      px: clamp(((clientX - rect.left) / rect.width) * 100, 0, 100),
-      py: clamp(((clientY - rect.top) / rect.height) * 100, 0, 100),
-    }
-  }
-
   const onPointerDown = useCallback(
     (handle: Handle) => (e: React.PointerEvent) => {
       e.preventDefault()
@@ -99,7 +89,7 @@ export function CropOverlay({ cropBox, onChange, autoDetected }: CropOverlayProp
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden"
+      className="absolute inset-0 overflow-hidden z-10"
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
@@ -130,7 +120,7 @@ export function CropOverlay({ cropBox, onChange, autoDetected }: CropOverlayProp
       {handles.map(({ id, style }) => (
         <div
           key={id}
-          className="absolute w-3 h-3 md:w-2.5 md:h-2.5 bg-green-500 rounded-sm cursor-pointer z-10 touch-none"
+          className="absolute w-3 h-3 md:w-2.5 md:h-2.5 bg-green-500 rounded-sm cursor-pointer z-30 touch-none"
           style={style}
           onPointerDown={onPointerDown(id)}
         />

@@ -59,7 +59,6 @@ export async function analyzeChart(
   if (cropBox && isMeaningfulCrop(cropBox)) {
     buffer = await cropBuffer(buffer, cropBox)
     effectiveMime = 'image/png' // cropBuffer selalu output PNG
-    console.info(`[analyzer] Crop applied: x1=${cropBox.x1} y1=${cropBox.y1} x2=${cropBox.x2} y2=${cropBox.y2}`)
   }
 
   const base64 = buffer.toString('base64')

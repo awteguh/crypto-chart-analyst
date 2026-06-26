@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData()
     const image = formData.get('image') as File | null
     if (!image) return NextResponse.json(FULL)
+    if (image.size > 10 * 1024 * 1024) return NextResponse.json(FULL)
 
     const buffer = Buffer.from(await image.arrayBuffer())
     const box = await detectChartArea(buffer)
@@ -68,12 +69,21 @@ async function detectChartArea(buffer: Buffer): Promise<CropBox> {
   while (rowTop > 0 && rowDensity[rowTop - 1] > rowThreshold) rowTop--
   while (rowBot < SIZE - 1 && rowDensity[rowBot + 1] > rowThreshold) rowBot++
 
-  // Cari batas kolom dalam range row tersebut
+  // Cari batas kolom hanya dalam range row yang terdeteksi (rowTop..rowBot)
+  // agar pixel UI di luar area chart tidak mempengaruhi batas kiri/kanan
   let colLeft = SIZE, colRight = 0
   for (let x = 0; x < SIZE; x++) {
-    if (colDensity[x] > 0) {
-      if (x < colLeft) colLeft = x
-      if (x > colRight) colRight = x
+    for (let y = rowTop; y <= rowBot; y++) {
+      const i = (y * SIZE + x) * ch
+      const r = data[i], g = data[i + 1], b = data[i + 2]
+      const isCandle =
+        (r > 150 && g < 110 && b < 110) ||
+        (g > 140 && r < 110 && b < 110)
+      if (isCandle) {
+        if (x < colLeft) colLeft = x
+        if (x > colRight) colRight = x
+        break // cukup 1 candle pixel per kolom
+      }
     }
   }
   if (colLeft >= colRight) return FULL
