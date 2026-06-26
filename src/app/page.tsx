@@ -161,7 +161,7 @@ export default function Home() {
           )}
 
           {singleFile && !result && (
-            <Button onClick={handleSingleAnalyze} isLoading={isLoading} disabled={cropBox === null} className="w-full">
+            <Button onClick={handleSingleAnalyze} isLoading={isLoading} className="w-full">
               🔍 Analisis Chart
             </Button>
           )}
