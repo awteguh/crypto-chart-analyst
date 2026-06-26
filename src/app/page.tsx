@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { Timeframe } from '@/types/chart'
 import { DropZone } from '@/components/upload/DropZone'
 import { ChartPreview } from '@/components/upload/ChartPreview'
@@ -14,8 +14,36 @@ import { Spinner } from '@/components/ui/Spinner'
 import { useAnalysis } from '@/hooks/useAnalysis'
 import { useMtfAnalysis } from '@/hooks/useMtfAnalysis'
 import type { CropBox } from '@/types/crop'
+import { isMeaningfulCrop } from '@/types/crop'
 
 type Mode = 'single' | 'mtf'
+
+/**
+ * Crop gambar di client-side menggunakan Canvas.
+ * Returns blob URL dari area yang di-crop, atau URL original jika tidak ada crop.
+ */
+async function cropImageUrl(file: File, crop: CropBox | null): Promise<string> {
+  const originalUrl = URL.createObjectURL(file)
+  if (!crop || !isMeaningfulCrop(crop)) return originalUrl
+
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const left   = Math.round(crop.x1 / 100 * img.naturalWidth)
+      const top    = Math.round(crop.y1 / 100 * img.naturalHeight)
+      const width  = Math.round((crop.x2 - crop.x1) / 100 * img.naturalWidth)
+      const height = Math.round((crop.y2 - crop.y1) / 100 * img.naturalHeight)
+      canvas.width  = width
+      canvas.height = height
+      canvas.getContext('2d')!.drawImage(img, left, top, width, height, 0, 0, width, height)
+      URL.revokeObjectURL(originalUrl)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => resolve(originalUrl)
+    img.src = originalUrl
+  })
+}
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>('single')
@@ -24,6 +52,14 @@ export default function Home() {
   const [singleFile, setSingleFile] = useState<File | null>(null)
   const { result, error, isLoading, analyze, reset } = useAnalysis()
   const [cropBox, setCropBox] = useState<CropBox | null>(null)
+  // URL gambar yang sudah di-crop — ini yang ditampilkan di ResultCard
+  const [croppedImageUrl, setCroppedImageUrl] = useState<string | null>(null)
+
+  // Saat result muncul, generate cropped image URL untuk ResultCard
+  useEffect(() => {
+    if (!result || !singleFile) { setCroppedImageUrl(null); return }
+    cropImageUrl(singleFile, cropBox).then(setCroppedImageUrl)
+  }, [result, singleFile, cropBox])
 
   // MTF mode state
   const [mtfFiles, setMtfFiles] = useState<Partial<Record<Timeframe, File>>>({})
@@ -147,9 +183,9 @@ export default function Home() {
             <div className="space-y-4">
               <ResultCard
                 result={result}
-                imageUrl={singleFile ? URL.createObjectURL(singleFile) : undefined}
+                imageUrl={croppedImageUrl ?? undefined}
               />
-              <Button variant="secondary" onClick={() => { setSingleFile(null); reset() }} className="w-full">
+              <Button variant="secondary" onClick={() => { setSingleFile(null); setCropBox(null); setCroppedImageUrl(null); reset() }} className="w-full">
                 🔄 Analisis Chart Baru
               </Button>
             </div>
