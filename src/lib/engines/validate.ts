@@ -49,9 +49,12 @@ const BEARISH_PATTERNS = [
 ]
 
 // Pattern bullish yang kuat
+// CATATAN: entri yang mengandung kata yang juga ada di BEARISH_PATTERNS
+// (mis. "head and shoulders") harus punya keyword unik di sini (mis. "inverse")
+// agar classifyPattern() yang cek BULLISH duluan bisa menangkap duluan.
 const BULLISH_PATTERNS = [
   'double bottom', 'triple bottom',
-  'inverse head', 'inverse h&s',
+  'inverse head', 'inverse h&s', 'inverse head and shoulders',
   'falling wedge',
   'bull flag', 'bullish flag',
   'bullish pennant',
@@ -61,14 +64,19 @@ const BULLISH_PATTERNS = [
   'morning star',
   'hammer',
   'bullish harami',
+  'piercing line',
 ]
 
 type Bias = 'bearish' | 'bullish' | 'neutral'
 
 function classifyPattern(name: string): Bias {
   const lower = name.toLowerCase()
-  if (BEARISH_PATTERNS.some((p) => lower.includes(p))) return 'bearish'
+  // Cek BULLISH dulu — penting untuk menghindari false-positive:
+  // "Inverse Head and Shoulders" mengandung substring "head and shoulders" (bearish),
+  // jadi jika bearish dicek duluan akan salah diklasifikasi sebagai bearish.
+  // Dengan mengecek bullish dulu, "inverse head" (bullish) dapat prioritas.
   if (BULLISH_PATTERNS.some((p) => lower.includes(p))) return 'bullish'
+  if (BEARISH_PATTERNS.some((p) => lower.includes(p))) return 'bearish'
   return 'neutral'
 }
 
