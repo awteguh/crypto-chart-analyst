@@ -103,6 +103,10 @@ export default function Home() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">
           Upload screenshot chart crypto — AI mendeteksi pattern & prediksi pump/dump
         </p>
+        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
+          by{' '}
+          <span className="font-semibold text-blue-500 dark:text-blue-400">AwTeguh</span>
+        </p>
       </div>
 
       {/* Fallback Warning */}
@@ -260,10 +264,23 @@ export default function Home() {
         </div>
       )}
 
-      {/* Disclaimer */}
-      <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-8">
-        ⚠️ Hanya untuk referensi teknikal. Bukan financial advice.
-      </p>
+      {/* Footer */}
+      <div className="text-center mt-8 space-y-1">
+        <p className="text-xs text-gray-400 dark:text-gray-600">
+          ⚠️ Hanya untuk referensi teknikal. Bukan financial advice.
+        </p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          Made with ❤️ by{' '}
+          <a
+            href="https://github.com/awteguh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-blue-500 dark:text-blue-400 hover:underline"
+          >
+            AwTeguh
+          </a>
+        </p>
+      </div>
     </main>
   )
 }
