@@ -99,10 +99,12 @@ export default function Home() {
       <div className="text-center mb-8 pt-2">
         {/* Logo pill */}
         <div className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-1.5 mb-4 backdrop-blur-sm">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm"
-            style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', boxShadow: '0 0 10px rgba(245,158,11,0.4)' }}>
-            📊
-          </div>
+          <img
+            src="/icon.png"
+            alt="logo"
+            className="w-6 h-6 rounded-lg"
+            style={{ boxShadow: '0 0 10px rgba(245,158,11,0.4)' }}
+          />
           <span className="text-xs font-semibold text-[#e2e8f0]">Crypto Chart Analyst</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-live"
             style={{ boxShadow: '0 0 6px rgba(52,211,153,0.8)' }} />
@@ -149,7 +151,7 @@ export default function Home() {
               : 'text-slate-500 hover:text-slate-300'
           }`}
         >
-          📊 Single Chart
+          <img src="/icon.png" alt="" className="w-4 h-4 inline" /> Single Chart
         </button>
         <button
           onClick={() => handleModeChange('mtf')}

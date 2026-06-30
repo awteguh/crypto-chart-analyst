@@ -76,9 +76,13 @@ export function DropZone({ onFile, label = 'Drop chart di sini atau klik untuk u
           if (file) handleFile(file)
         }}
       />
-      <p className="text-5xl mb-3" style={{ filter: 'drop-shadow(0 0 14px rgba(245,158,11,0.5))' }}>
-        📊
-      </p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/icon.png"
+        alt="chart icon"
+        className="w-14 h-14 mx-auto mb-3"
+        style={{ filter: 'drop-shadow(0 0 14px rgba(245,158,11,0.5))' }}
+      />
       <p className="text-[#e2e8f0] font-semibold mb-1">{label}</p>
       <p className="text-slate-500 text-xs">PNG, JPG, WEBP · Maks 10MB</p>
       <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-full text-xs">
