@@ -78,6 +78,30 @@ const DIAGRAMS: Diagram[] = [
     path: '5,25 12,45 25,70 50,72 72,45 80,28 88,40 95,32',
     arrow: { x1: 90, y1: 35, x2: 97, y2: 12, up: true },
   },
+  {
+    // Lower Lows & Lower Highs — zigzag menurun dengan dua trendline
+    match: (n) =>
+      (n.includes('lower') && n.includes('high')) ||
+      (n.includes('lower') && n.includes('low')) ||
+      n.includes('downtrend') ||
+      n.includes('bearish structure'),
+    path: '5,18 22,58 38,32 55,72 70,46 88,82',
+    arrow: { x1: 85, y1: 72, x2: 95, y2: 92, up: false },
+  },
+  {
+    // Bearish Trendline — garis resistance menurun dengan harga memantul di bawahnya
+    match: (n) =>
+      n.includes('bearish trendline') ||
+      n.includes('bear trendline') ||
+      (n.includes('trendline') && !n.includes('bull')),
+    path: '5,20 20,38 18,30 40,52 38,42 62,64 60,54 85,76 83,65 95,80',
+    arrow: { x1: 88, y1: 74, x2: 95, y2: 92, up: false },
+  },
+  {
+    match: (n) => n.includes('bullish trendline') || (n.includes('trendline') && n.includes('bull')),
+    path: '5,80 20,62 18,70 40,48 38,58 62,36 60,46 85,24 83,35 95,20',
+    arrow: { x1: 88, y1: 26, x2: 95, y2: 8, up: true },
+  },
 ]
 
 function findDiagram(name: string): Diagram | null {
@@ -121,10 +145,12 @@ function PatternDiagram({ pattern }: { pattern: Pattern }) {
             )}
           </>
         ) : (
-          // Pattern tidak punya diagram khusus → tampilkan garis netral
-          <text x="50" y="55" textAnchor="middle" fontSize="10" fill="#475569">
-            {pattern.name}
-          </text>
+          // Fallback: garis diagonal netral + nama
+          <>
+            <line x1="10" y1="20" x2="90" y2="80" stroke={stroke} strokeWidth={2} strokeDasharray="6 3" strokeLinecap="round" />
+            <circle cx="10" cy="20" r="3" fill={stroke} />
+            <circle cx="90" cy="80" r="3" fill={stroke} />
+          </>
         )}
         <defs>
           <marker
