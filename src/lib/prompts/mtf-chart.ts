@@ -87,8 +87,13 @@ function formatSR(r: AnalysisResult): string {
 
 function formatSignal(r: AnalysisResult): string {
   const s = r.signal
-  if (!s || s.entry === '-') return ''
-  return `  Signal: Entry=${s.entry} | SL=${s.stop_loss} | TP=${s.take_profit} | R:R=${s.risk_reward}`
+  if (!s) return ''
+  const hasAnySignal = [s.entry, s.stop_loss, s.take_profit].some(v => v && v !== '-')
+  if (!hasAnySignal) return ''
+  const entry = s.entry && s.entry !== '-' ? s.entry : 'tidak tersedia'
+  const sl    = s.stop_loss && s.stop_loss !== '-' ? s.stop_loss : 'tidak tersedia'
+  const tp    = s.take_profit && s.take_profit !== '-' ? s.take_profit : 'tidak tersedia'
+  return `  Signal: Entry=${entry} | SL=${sl} | TP=${tp} | R:R=${s.risk_reward}`
 }
 
 function formatTimeframe(tf: string, r: AnalysisResult, weight: number): string {
@@ -162,14 +167,22 @@ Konflik (sebutkan TF & indikator yang BERTENTANGAN):
   ✗ "Pattern Bearish (Rising Wedge) di 4H vs Bullish keseluruhan — waspadai breakout bawah"
 
 ═══════════════════════════════════════════════════════════════
-PANDUAN RECOMMENDED SIGNAL (berdasarkan data SR dan signal per TF)
+PANDUAN RECOMMENDED SIGNAL (WAJIB DIISI — JANGAN "-")
 ═══════════════════════════════════════════════════════════════
 
-Gunakan level Support/Resistance dan Signal dari data di atas untuk menentukan:
-- Entry: TF kecil yang align dengan tren TF besar. Sebutkan level konkret jika ada.
-- Stop Loss: Di bawah support terkuat dari 1H atau 4H. Sebutkan level atau EMA.
-- Take Profit: Resistance berikutnya dari 4H atau 1D. Sebutkan level atau target.
-- R:R: Hitung dari jarak entry-SL vs entry-TP (minimal 1:1.5 untuk layak trade).
+Gunakan level Support/Resistance dan Signal dari data per TF di atas.
+Entry, Stop Loss, dan Take Profit WAJIB diisi dengan deskripsi konkret.
+
+- Entry    : Sebutkan kondisi masuk + level/area harga jika ada di data
+             Contoh: "Buy break di atas resistance 1H, konfirmasi MACD bullish crossover"
+             Jika tidak ada harga konkret: "Masuk setelah candle konfirmasi break resistance"
+- Stop Loss: Di bawah support terkuat dari 1H atau 4H
+             Contoh: "SL di bawah swing low terakhir / support area 1H"
+- Take Profit: Resistance berikutnya dari 4H atau 1D
+             Contoh: "TP1 di resistance 4H, TP2 di resistance 1D"
+- R:R      : Estimasi rasio minimal 1:1.5 (wajib ada angka, bukan "-")
+
+DILARANG mengembalikan "-" untuk entry, stop_loss, atau take_profit.
 
 ═══════════════════════════════════════════════════════════════
 FORMAT OUTPUT (HANYA JSON VALID, TANPA MARKDOWN)

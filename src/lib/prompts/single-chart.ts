@@ -115,7 +115,28 @@ Jika suatu indikator tidak ada (null) → kontribusinya = 0, jangan dikarang.
     selisih ≤ 10    → "NEUTRAL"
 
 ═══════════════════════════════════════════════════════════════
-LANGKAH 4 — KOORDINAT OVERLAY (WAJIB JIKA ADA PATTERN)
+LANGKAH 4 — BACA LEVEL HARGA DARI CHART (WAJIB)
+═══════════════════════════════════════════════════════════════
+
+Baca label harga yang tercetak di sumbu Y (kanan atau kiri chart).
+Contoh: "42,500", "0.0234", "1.85K", dll.
+
+Dari harga yang terbaca, tentukan:
+  Entry  : Level di mana sinyal beli/jual valid (mis. "di atas 42,500 resistance")
+  SL     : Di bawah support terkuat yang terlihat (mis. "di bawah 40,000")
+  TP     : Target resistance berikutnya (mis. "target 46,000 — Upper BB")
+  R:R    : Perkiraan rasio (mis. "1:2")
+
+Jika label harga tidak terbaca dengan jelas → gunakan deskripsi relatif:
+  Entry  : "Masuk setelah candle konfirmasi [PUMP/DUMP]"
+  SL     : "Di bawah swing low terakhir"
+  TP     : "Di resistance terdekat"
+  R:R    : "1:1.5"
+
+JANGAN isi entry/SL/TP dengan "-" — selalu berikan deskripsi minimal.
+
+═══════════════════════════════════════════════════════════════
+LANGKAH 5 — KOORDINAT OVERLAY (WAJIB JIKA ADA PATTERN)
 ═══════════════════════════════════════════════════════════════
 
 Koordinat dalam PERSEN 0-100 relatif SELURUH GAMBAR.
