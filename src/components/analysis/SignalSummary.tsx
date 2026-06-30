@@ -2,29 +2,57 @@
 
 import type { TradeSignal } from '@/types/analysis'
 
+interface SignalItem {
+  label: string
+  value: string
+  borderColor: string
+  valueClass?: string
+}
+
 export function SignalSummary({ signal }: { signal: TradeSignal }) {
+  const items: SignalItem[] = [
+    {
+      label: 'ENTRY',
+      value: signal.entry,
+      borderColor: 'border-l-cyan-500',
+    },
+    {
+      label: 'R:R',
+      value: signal.risk_reward,
+      borderColor: 'border-l-amber-500',
+      valueClass: 'text-2xl font-black text-amber-400 leading-none',
+    },
+    {
+      label: 'STOP LOSS',
+      value: signal.stop_loss,
+      borderColor: 'border-l-red-500',
+    },
+    {
+      label: 'TAKE PROFIT',
+      value: signal.take_profit,
+      borderColor: 'border-l-emerald-500',
+    },
+  ]
+
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 space-y-1">
-      <h4 className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
+    <div>
+      <h4 className="text-[9px] font-bold tracking-[1.5px] uppercase text-slate-600 mb-2">
         Sinyal Trading
       </h4>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-        <div>
-          <span className="text-gray-500">Entry:</span>{' '}
-          <span className="font-medium text-gray-800 dark:text-gray-100">{signal.entry}</span>
-        </div>
-        <div>
-          <span className="text-gray-500">R:R:</span>{' '}
-          <span className="font-bold text-blue-600 dark:text-blue-400">{signal.risk_reward}</span>
-        </div>
-        <div>
-          <span className="text-red-500">SL:</span>{' '}
-          <span className="font-medium text-gray-800 dark:text-gray-100">{signal.stop_loss}</span>
-        </div>
-        <div>
-          <span className="text-green-500">TP:</span>{' '}
-          <span className="font-medium text-gray-800 dark:text-gray-100">{signal.take_profit}</span>
-        </div>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className={`bg-white/[0.03] border border-white/[0.06] border-l-2 ${item.borderColor} rounded-xl p-3`}
+          >
+            <div className="text-[9px] font-bold tracking-widest uppercase text-slate-500 mb-1">
+              {item.label}
+            </div>
+            <div className={item.valueClass ?? 'text-xs text-slate-300 leading-relaxed'}>
+              {item.value}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
