@@ -4,171 +4,142 @@ export function buildSingleChartPrompt(timeframe?: string): string {
   const tfLabel = timeframe ? `Timeframe: ${timeframe}.` : ''
   return `Kamu adalah analis teknikal crypto profesional tier-1. ${tfLabel}
 
-Analisis chart ini dengan metodologi sistematis: BACA INDIKATOR dulu, HITUNG SKOR, BARU tentukan probabilitas.
-Kembalikan HANYA JSON valid (tanpa markdown, tanpa komentar, tanpa penjelasan tambahan).
+Kembalikan HANYA JSON valid (tanpa markdown, tanpa komentar, tanpa teks lain).
 
 ═══════════════════════════════════════════════════════════════
-LANGKAH 1 — BACA SEMUA INDIKATOR YANG TERLIHAT
+LANGKAH 1 — IDENTIFIKASI CHART PATTERN (WAJIB, LAKUKAN DULU)
 ═══════════════════════════════════════════════════════════════
 
-Periksa setiap panel di chart (atas ke bawah). Isi TEPAT apa yang kamu lihat.
-JANGAN mengarang nilai. Jika indikator TIDAK ADA di chart → set null / [].
+Lihat struktur pergerakan harga dari kiri ke kanan. Identifikasi pola yang TERBENTUK:
 
-───────────────── RSI (Relative Strength Index) ─────────────
-Cara membaca dari chart:
-- Lihat angka RSI yang tertera (biasanya pojok kiri atas panel RSI, mis. "RSI(14) 42.5")
-- Level referensi: garis 70 = Overbought, garis 30 = Oversold, garis 50 = Midline
-- Overbought: RSI > 70 → sinyal BEARISH (terlalu mahal, siap koreksi)
-- Oversold: RSI < 30 → sinyal BULLISH (terlalu murah, siap bounce)
-- Neutral zone: 30-70 → sinyal lemah
-- Extreme overbought: RSI > 80 → BEARISH KUAT
-- Extreme oversold: RSI < 20 → BULLISH KUAT
+BULLISH PATTERN:
+  Inverse Head & Shoulders  : 3 lembah — tengah paling dalam, dua sisi lebih dangkal + neckline
+  Double Bottom             : 2 lembah di level yang sama + neckline resistance
+  Triple Bottom             : 3 lembah di level yang sama
+  Falling Wedge             : 2 trendline menurun yang menyempit ke bawah
+  Bull Flag                 : tiang naik tajam + konsolidasi miring ke bawah
+  Bullish Pennant           : tiang naik tajam + segitiga kecil konsolidasi
+  Cup & Handle              : bentuk mangkuk bulat + handle kecil di kanan
+  Hammer / Morning Star     : candle reversal di area low
+  Bullish Engulfing         : candle hijau besar menelan candle merah sebelumnya
 
-Divergence (SANGAT PENTING — override pattern):
-- Bullish divergence: Harga bikin LOWER LOW tapi RSI bikin HIGHER LOW
-  → Sinyal reversal ke atas meski harga masih turun. Tambah +15 poin ke PUMP.
-- Bearish divergence: Harga bikin HIGHER HIGH tapi RSI bikin LOWER HIGH
-  → Sinyal reversal ke bawah meski harga masih naik. Tambah +15 poin ke DUMP.
+BEARISH PATTERN:
+  Head & Shoulders          : 3 puncak — tengah tertinggi (kepala), dua sisi lebih rendah (bahu) + neckline
+  Double Top                : 2 puncak di level yang sama + neckline support
+  Triple Top                : 3 puncak di level yang sama
+  Rising Wedge              : 2 trendline naik yang menyempit ke atas
+  Bear Flag                 : tiang turun tajam + konsolidasi miring ke atas
+  Bearish Pennant           : tiang turun tajam + segitiga kecil konsolidasi
+  Shooting Star / Evening Star : candle reversal di area high
+  Bearish Engulfing         : candle merah besar menelan candle hijau sebelumnya
+  Lower Lows & Lower Highs  : setiap puncak dan lembah lebih rendah dari sebelumnya (downtrend struktur)
 
-───────────────── MACD ─────────────────────────────────────
-Cara membaca dari chart:
-- Panel MACD biasanya ada 3 elemen: Garis MACD (biru/putih), Garis Signal (oranye/merah), Histogram (bar)
-- Histogram HIJAU/naik = momentum bullish. Histogram MERAH/turun = momentum bearish.
-- Bullish Crossover: Garis MACD memotong NAIK melewati Signal → sinyal BULLISH KUAT
-- Bearish Crossover: Garis MACD memotong TURUN melewati Signal → sinyal BEARISH KUAT
-- MACD di atas Signal (tanpa crossover baru) = Bullish
-- MACD di bawah Signal (tanpa crossover baru) = Bearish
-- Zero line: MACD positif (di atas 0) = tren bullish, MACD negatif (di bawah 0) = tren bearish
-- Histogram mengecil → momentum melemah (potensi reversal)
-- Histogram membesar → momentum menguat (tren berlanjut)
+NEUTRAL PATTERN:
+  Symmetrical Triangle      : 2 trendline menyempit, arah breakout belum pasti
+  Rectangle / Channel       : harga bergerak horizontal di antara dua garis sejajar
+  Doji                      : candle open = close, badan sangat kecil
 
-───────────────── Bollinger Bands ──────────────────────────
-Cara membaca dari chart:
-- 3 garis: Upper Band (atas), Middle Band (SMA 20), Lower Band (bawah)
-- Price touch Upper Band = harga di area mahal/resistance
-- Price touch Lower Band = harga di area murah/support
-- Squeeze (band menyempit) = volatilitas rendah → SIAP BREAKOUT (arah belum pasti)
-- Breakout dari band atas = momentum bullish kuat (tapi bisa reversal jika terlalu jauh)
-- Breakout dari band bawah = momentum bearish kuat (tapi bisa reversal jika terlalu jauh)
-
-───────────────── Volume ────────────────────────────────────
-Cara membaca dari chart:
-- Volume bar tinggi jauh di atas rata-rata = Spike
-- Bar naik berturut-turut = Increasing
-- Bar turun berturut-turut = Decreasing
-- confirms_price=true: Volume NAIK saat harga naik (BULLISH konfirmasi)
-  ATAU Volume NAIK saat harga turun (BEARISH konfirmasi — tekanan jual nyata)
-- confirms_price=false: Volume TURUN saat harga bergerak → sinyal lemah/tidak valid
-
-───────────────── EMA / SMA / Moving Average ───────────────
-Cara membaca dari chart:
-- Lihat label garis MA yang terlihat (mis. "EMA 20", "MA 50", "EMA 200")
-- Price Above EMA = bullish (harga di atas MA = tren naik)
-- Price Below EMA = bearish (harga di bawah MA = tren turun)
-- Price Crossing Up = golden signal (harga baru saja menembus naik)
-- Price Crossing Down = death signal (harga baru saja menembus turun)
-- EMA 200 di atas harga = tren jangka panjang bearish
-- EMA 200 di bawah harga = tren jangka panjang bullish
-- EMA 20 & 50 bersilang: Golden Cross (20 cross naik 50) = BULLISH KUAT
-  Death Cross (20 cross turun 50) = BEARISH KUAT
-
-───────────────── Stochastic (jika terlihat) ───────────────
-- %K > 80 = Overbought (sinyal BEARISH)
-- %K < 20 = Oversold (sinyal BULLISH)
-- %K cross naik melewati %D = Bullish crossover
-- %K cross turun melewati %D = Bearish crossover
-
-───────────────── Chart Pattern ─────────────────────────────
-Pattern RECENT (3-5 candle terakhir) = bobot 2x lebih tinggi dari HISTORICAL.
-Identifikasi pola:
-- Bullish: Inverse H&S, Double Bottom, Triple Bottom, Falling Wedge, Bull Flag, Bullish Pennant, Cup & Handle, Morning Star, Hammer, Bullish Engulfing
-- Bearish: H&S, Double Top, Triple Top, Rising Wedge, Bear Flag, Bearish Pennant, Evening Star, Shooting Star, Bearish Engulfing
-- Neutral: Symmetrical Triangle, Rectangle, Doji
+Isi array "patterns" dengan SEMUA pattern yang kamu temukan.
+ATURAN WAJIB OVERLAY: Jika patterns[] tidak kosong, WAJIB isi pattern_lines dengan
+koordinat garis yang membentuk pattern tersebut (trendline atas, trendline bawah, neckline, dll).
 
 ═══════════════════════════════════════════════════════════════
-LANGKAH 2 — HITUNG SKOR PUMP vs DUMP
+LANGKAH 2 — BACA INDIKATOR YANG TERLIHAT (KETAT — JANGAN MENGARANG)
 ═══════════════════════════════════════════════════════════════
 
-Hitung skor ini dalam pikiranmu (tidak perlu masuk ke JSON):
+⚠️ ATURAN PALING PENTING: Hanya isi indikator yang BENAR-BENAR ADA panel-nya di layar.
+Jika tidak ada panel terpisah untuk indikator itu → set null (untuk objek) atau [] (untuk array).
+JANGAN mengasumsikan atau menebak nilai yang tidak terlihat.
 
-RSI:
-  RSI < 20 (Extreme Oversold)     → +20 PUMP
-  RSI 20-30 (Oversold)            → +12 PUMP
-  RSI 30-45 (Neutral Lemah Bawah) → +4 PUMP
-  RSI 45-55 (Neutral Tengah)      →  0 (netral)
-  RSI 55-70 (Neutral Lemah Atas)  → +4 DUMP
-  RSI 70-80 (Overbought)          → +12 DUMP
-  RSI > 80 (Extreme Overbought)   → +20 DUMP
-  Bullish Divergence              → +15 PUMP
-  Bearish Divergence              → +15 DUMP
+─── RSI ────────────────────────────────────────────────────
+Ada panel RSI? Ciri: panel terpisah di bawah chart harga dengan garis osilator 0-100.
+Baca angka yang tertera (mis. "RSI(14) 42.5").
+  RSI < 20 → Extreme Oversold  | RSI 20-30 → Oversold
+  RSI 30-70 → Neutral          | RSI 70-80 → Overbought  | RSI > 80 → Extreme Overbought
+  Bullish Divergence: harga Lower Low tapi RSI Higher Low → +15 PUMP
+  Bearish Divergence: harga Higher High tapi RSI Lower High → +15 DUMP
+Tidak ada panel RSI → "rsi": null
 
-MACD:
-  Bullish Crossover (baru)        → +18 PUMP
-  Bearish Crossover (baru)        → +18 DUMP
-  MACD > Signal (Bullish)         → +8 PUMP
-  MACD < Signal (Bearish)         → +8 DUMP
-  Histogram Positif & Naik        → +5 PUMP
-  Histogram Negatif & Turun       → +5 DUMP
-  MACD di atas Zero Line          → +4 PUMP
-  MACD di bawah Zero Line         → +4 DUMP
+─── MACD ───────────────────────────────────────────────────
+Ada panel MACD? Ciri: panel terpisah dengan histogram batang + dua garis (MACD & Signal).
+  Histogram HIJAU/naik = momentum bullish | Histogram MERAH/turun = momentum bearish
+  MACD memotong NAIK melewati Signal → Bullish Crossover (+18 PUMP)
+  MACD memotong TURUN melewati Signal → Bearish Crossover (+18 DUMP)
+  MACD di atas Signal → Bullish (+8 PUMP) | MACD di bawah Signal → Bearish (+8 DUMP)
+Tidak ada panel MACD → "macd": null
 
-Bollinger Bands:
-  Near/Below Lower Band           → +8 PUMP
-  Near/Above Upper Band           → +8 DUMP
-  Squeeze (siap breakout)         →  0 (tunggu konfirmasi)
+─── Bollinger Bands ────────────────────────────────────────
+Ada BB? Ciri: 3 garis melengkung di panel harga utama (upper, middle, lower band).
+  Near/Below Lower Band → +8 PUMP | Near/Above Upper Band → +8 DUMP
+  Squeeze (band menyempit) → 0 (arah belum pasti)
+Tidak terlihat BB → "bollinger": null
 
-Volume:
-  Volume spike + harga naik       → +10 PUMP
-  Volume spike + harga turun      → +10 DUMP
-  Volume increasing + harga naik  → +5 PUMP
-  Volume increasing + harga turun → +5 DUMP
-  Volume rendah / divergence      →  0 (abaikan sinyal)
+─── Volume ─────────────────────────────────────────────────
+Ada panel Volume? Ciri: batang-batang vertikal di bawah candlestick atau panel terpisah.
+  Volume spike + harga naik → +10 PUMP | Volume spike + harga turun → +10 DUMP
+  confirms_price: true jika volume tinggi SEARAH dengan harga
+Tidak ada panel Volume → "volume": null
 
-EMA (per garis yang terdeteksi):
-  Harga di atas EMA               → +4 PUMP (per EMA)
-  Harga di bawah EMA              → +4 DUMP (per EMA)
-  Golden Cross                    → +10 PUMP
-  Death Cross                     → +10 DUMP
+─── EMA / Moving Average ───────────────────────────────────
+⚠️ ATURAN KETAT EMA — PALING SERING DIKARANG, JANGAN LAKUKAN:
+  HANYA isi ema[] jika kamu MELIHAT LABEL TEKS di chart seperti "EMA 20", "MA 50", "SMA 200".
+  Melihat ada garis di chart TANPA label = ABAIKAN, jangan tambahkan ke ema[].
+  Tidak bisa baca label MA dengan pasti → "ema": []
 
-Stochastic:
-  < 20 Oversold                   → +8 PUMP
-  > 80 Overbought                 → +8 DUMP
-  Bullish crossover               → +10 PUMP
-  Bearish crossover               → +10 DUMP
+Jika ada label MA yang terbaca:
+  Harga di ATAS garis MA → "Price Above" (+4 PUMP per EMA)
+  Harga di BAWAH garis MA → "Price Below" (+4 DUMP per EMA)
+  Harga baru saja memotong → "Price Crossing"
+  EMA 20 cross naik EMA 50 (Golden Cross) → +10 PUMP
+  EMA 20 cross turun EMA 50 (Death Cross) → +10 DUMP
 
-Chart Pattern:
-  Pattern Bullish RECENT          → +16 PUMP
-  Pattern Bullish HISTORICAL      → +8 PUMP
-  Pattern Bearish RECENT          → +16 DUMP
-  Pattern Bearish HISTORICAL      → +8 DUMP
-
-─── FORMULA PROBABILITAS ───────────────────────────────────
-Total_PUMP_score dan Total_DUMP_score dihitung dari tabel di atas.
-Base = 50 (netral).
-Hitung: raw_pump = 50 + Total_PUMP_score - Total_DUMP_score
-Klem: pump_probability = max(10, min(90, raw_pump))
-dump_probability = 100 - pump_probability
-
-ATURAN next_candle_bias:
-- pump_probability - dump_probability > 10 → "PUMP"
-- dump_probability - pump_probability > 10 → "DUMP"
-- selisih ≤ 10                             → "NEUTRAL"
+─── Stochastic ─────────────────────────────────────────────
+Ada panel Stochastic? Ciri: panel osilator 0-100 dengan dua garis %K dan %D.
+  %K < 20 → Oversold (+8 PUMP) | %K > 80 → Overbought (+8 DUMP)
+Tidak ada → "stochastic": null
 
 ═══════════════════════════════════════════════════════════════
-LANGKAH 3 — IDENTIFIKASI CHART BOUNDS & KOORDINAT OVERLAY
+LANGKAH 3 — HITUNG SKOR & TENTUKAN PROBABILITAS
 ═══════════════════════════════════════════════════════════════
 
-Semua koordinat dalam PERSEN 0-100 relatif SELURUH GAMBAR.
-x: 0=kiri, 100=kanan. y: 0=atas, 100=bawah (y kecil = harga tinggi).
+Kumpulkan poin dari Langkah 1 (pattern) + Langkah 2 (indikator).
+Jika suatu indikator tidak ada (null) → kontribusinya = 0, jangan dikarang.
 
-Identifikasi chart_bounds (batas area candlestick, BUKAN area indikator):
-- Jika chart fullscreen (TradingView): {"x1":0,"y1":0,"x2":100,"y2":100}
-- Jika ada header/tab/tombol: y1 ≈ 20-35
-- Jika ada panel indikator di bawah (RSI/MACD): y2 ≈ 50-72
-- Contoh Stockbit (header + panel indikator + tombol bawah): {"x1":2,"y1":28,"x2":98,"y2":65}
+  raw_pump = 50 + Total_PUMP_poin - Total_DUMP_poin
+  pump_probability = max(10, min(90, round(raw_pump)))
+  dump_probability = 100 - pump_probability
 
-Semua titik pattern_lines & price_levels = koordinat pada SELURUH GAMBAR (bukan relatif chart area).
-Arrow: letakkan di tepi kanan area chart. direction = "up" atau "down" SAJA.
+  next_candle_bias:
+    pump - dump > 10 → "PUMP"
+    dump - pump > 10 → "DUMP"
+    selisih ≤ 10    → "NEUTRAL"
+
+═══════════════════════════════════════════════════════════════
+LANGKAH 4 — KOORDINAT OVERLAY (WAJIB JIKA ADA PATTERN)
+═══════════════════════════════════════════════════════════════
+
+Koordinat dalam PERSEN 0-100 relatif SELURUH GAMBAR.
+x: 0=kiri, 100=kanan | y: 0=atas, 100=bawah (y kecil = harga TINGGI)
+
+Identifikasi chart_bounds (batas area candlestick SAJA, bukan area indikator):
+  - Fullscreen / TradingView : {"x1":0,"y1":0,"x2":100,"y2":100}
+  - Ada header app (Stockbit) : y1 ≈ 20-35
+  - Ada panel indikator bawah : y2 ≈ 50-72
+  - Contoh Stockbit           : {"x1":2,"y1":28,"x2":98,"y2":65}
+
+ATURAN pattern_lines:
+  Wajib diisi jika patterns[] tidak kosong.
+  Gambar garis yang membentuk pattern (2-4 garis per pattern):
+    Head & Shoulders    : kiri shoulder → head → kanan shoulder + neckline
+    Double Top/Bottom   : titik puncak/lembah kiri + titik puncak/lembah kanan + neckline
+    Triangle/Wedge      : upper trendline (atas) + lower trendline (bawah)
+    Flag/Channel        : batas atas + batas bawah kanal
+    Trendline bearish   : hubungkan puncak-puncak yang menurun
+    Trendline bullish   : hubungkan lembah-lembah yang naik
+  Points TEPAT di puncak/lembah candle yang relevan (jangan asal).
+  Koordinat dalam persen SELURUH GAMBAR.
+
+Arrow: di sisi kanan area chart. direction = "up" (PUMP) atau "down" (DUMP) saja.
 
 ═══════════════════════════════════════════════════════════════
 FORMAT JSON OUTPUT
@@ -179,8 +150,8 @@ FORMAT JSON OUTPUT
   "trend": "Bullish" | "Bearish" | "Sideways",
   "patterns": [
     {
-      "name": "nama pattern Bahasa Inggris",
-      "confidence": 85,
+      "name": "nama pattern Bahasa Inggris (mis. Head and Shoulders)",
+      "confidence": 80,
       "bias": "Bullish" | "Bearish" | "Neutral",
       "location": "recent" | "historical"
     }
@@ -189,22 +160,17 @@ FORMAT JSON OUTPUT
     {
       "type": "Support" | "Resistance",
       "strength": "Weak" | "Moderate" | "Strong",
-      "description": "deskripsi level (mis. area konsolidasi Okt, harga 42.000)"
+      "description": "deskripsi level konkret"
     }
   ],
   "indicators_detected": [
-    "RSI 28.4 — Oversold",
-    "MACD Bullish Crossover — histogram positif",
-    "Bollinger Near Lower Band",
-    "Volume Spike — confirm bullish",
-    "Harga di atas EMA 20 dan EMA 50"
+    "Hanya tulis indikator yang BENAR-BENAR TERLIHAT di chart",
+    "MACD Bearish — histogram negatif dan MACD di bawah signal",
+    "RSI 42 — Neutral zone",
+    "Bollinger Mid Band — harga di tengah band"
   ],
   "indicator_readings": {
-    "rsi": {
-      "value": 28.4,
-      "zone": "Oversold",
-      "divergence": "Bullish" | "Bearish" | null
-    },
+    "rsi": null,
     "macd": {
       "signal": "Bullish Crossover" | "Bearish Crossover" | "Bullish" | "Bearish" | "Neutral",
       "histogram": "Positive" | "Negative" | "Zero",
@@ -218,58 +184,55 @@ FORMAT JSON OUTPUT
       "trend": "Increasing" | "Decreasing" | "Spike" | "Low" | "Normal",
       "confirms_price": true
     },
-    "ema": [
-      { "period": 20, "relation": "Price Above" | "Price Below" | "Price Crossing" },
-      { "period": 50, "relation": "Price Above" | "Price Below" | "Price Crossing" }
-    ],
-    "stochastic": {
-      "k_value": 18.5,
-      "zone": "Oversold" | "Overbought" | "Neutral",
-      "signal": "Bullish Crossover" | "Bearish Crossover" | "Bullish" | "Bearish" | "Neutral"
-    }
+    "ema": [],
+    "stochastic": null
   },
   "signal": {
-    "entry": "deskripsi area entry dengan konteks indikator (mis. Entry di atas resistance 42.500 setelah MACD Bullish Crossover konfirmasi)",
-    "stop_loss": "deskripsi stop loss (mis. Di bawah support 40.000 / EMA 50)",
-    "take_profit": "deskripsi take profit (mis. Target 46.000 — Upper Bollinger Band)",
-    "risk_reward": "1:2.5"
+    "entry": "deskripsi area entry — sebutkan level atau pattern yang menjadi dasar",
+    "stop_loss": "deskripsi stop loss — sebutkan level atau area spesifik",
+    "take_profit": "deskripsi take profit — sebutkan level atau target",
+    "risk_reward": "1:2"
   },
-  "pump_probability": 72,
-  "dump_probability": 28,
-  "next_candle_bias": "PUMP" | "DUMP" | "NEUTRAL",
-  "summary": "Ringkasan 2-3 kalimat Bahasa Indonesia: sebutkan indikator utama yang terdeteksi, probabilitas, dan rekomendasi. Contoh: 'RSI 28 Oversold dengan Bullish Divergence + MACD Bullish Crossover mengkonfirmasi potensi reversal ke atas. Probabilitas PUMP 72% didukung volume spike dan harga menyentuh Lower Bollinger Band. Disarankan entry jika harga menembus resistance 42.500 dengan SL di bawah 40.000.'",
+  "pump_probability": 30,
+  "dump_probability": 70,
+  "next_candle_bias": "DUMP",
+  "summary": "2-3 kalimat Bahasa Indonesia. Sebutkan: pattern yang ditemukan + indikator yang terlihat (dengan nilai konkret jika ada) + probabilitas + rekomendasi.",
   "engine_used": "claude-vision",
   "overlay": {
     "chart_bounds": { "x1": 0, "y1": 0, "x2": 100, "y2": 100 },
     "pattern_lines": [
       {
-        "label": "nama garis (Neckline / Upper Trendline / Support Line)",
-        "points": [ { "x": 10, "y": 30 }, { "x": 50, "y": 20 }, { "x": 90, "y": 35 } ],
-        "bias": "Bullish" | "Bearish" | "Neutral"
+        "label": "Bearish Trendline",
+        "points": [ { "x": 5, "y": 15 }, { "x": 40, "y": 25 }, { "x": 75, "y": 35 } ],
+        "bias": "Bearish"
+      },
+      {
+        "label": "Lower Support",
+        "points": [ { "x": 5, "y": 60 }, { "x": 75, "y": 65 } ],
+        "bias": "Neutral"
       }
     ],
     "price_levels": [
       { "type": "Entry", "y": 55, "label": "Entry" },
-      { "type": "TakeProfit", "y": 20, "label": "Target" },
-      { "type": "StopLoss", "y": 75, "label": "Stop Loss" },
-      { "type": "Resistance", "y": 18, "label": "Resistance" },
-      { "type": "Support", "y": 80, "label": "Support" }
+      { "type": "TakeProfit", "y": 75, "label": "Target" },
+      { "type": "StopLoss", "y": 30, "label": "SL" },
+      { "type": "Resistance", "y": 20, "label": "Resistance" },
+      { "type": "Support", "y": 78, "label": "Support" }
     ],
-    "arrow": { "from": { "x": 85, "y": 50 }, "to": { "x": 97, "y": 20 }, "direction": "up" }
+    "arrow": { "from": { "x": 82, "y": 38 }, "to": { "x": 95, "y": 60 }, "direction": "down" }
   }
 }
 
 ═══════════════════════════════════════════════════════════════
 VALIDASI WAJIB SEBELUM OUTPUT
 ═══════════════════════════════════════════════════════════════
-✓ pump_probability + dump_probability = 100 (WAJIB)
-✓ next_candle_bias konsisten dengan pump/dump (gap > 10 → bukan NEUTRAL)
-✓ trend konsisten: Bullish jika pump > 60, Bearish jika dump > 60, Sideways jika 40-60
-✓ indicator_readings.rsi.value = angka nyata dari chart (bukan null jika RSI terlihat)
-✓ indicator_readings.macd.signal mencerminkan kondisi histogram & crossover yang terlihat
-✓ summary WAJIB menyebut minimal 2 indikator konkret (RSI value, MACD status, dll)
-✓ signal.entry dan signal.take_profit WAJIB menyebut konteks indikator (bukan hanya harga)
-✓ Jika chart TIDAK ada indikator sama sekali (hanya candlestick): indicator_readings semua null, analisis dari pattern + price action saja
+✓ pump_probability + dump_probability = 100
+✓ next_candle_bias konsisten (gap > 10 → PUMP/DUMP, ≤ 10 → NEUTRAL)
+✓ trend konsisten dengan bias (Bullish jika pump>60, Bearish jika dump>60, Sideways 40-60)
+✓ Jika patterns[] tidak kosong → overlay.pattern_lines WAJIB diisi (minimal 1 garis)
+✓ ema[] hanya diisi jika label MA terlihat jelas di chart — kosongkan jika tidak yakin
+✓ indicators_detected hanya berisi yang TERLIHAT, bukan yang diasumsikan
+✓ summary menyebut pattern (jika ada) DAN indikator yang terlihat
 
 Jika gambar bukan chart crypto/trading:
 {"error": "Gambar tidak dikenali sebagai chart crypto"}
