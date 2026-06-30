@@ -4,7 +4,11 @@ import type { AnalysisResult } from '@/types/analysis'
 
 // Bobot per timeframe — TF besar lebih dominan
 const TF_WEIGHT: Record<string, number> = {
-  '1D': 4, '4H': 3, '1H': 2, '15m': 1, '15M': 1, '5m': 0.5, '5M': 0.5,
+  '1D': 4, '1d': 4,
+  '4H': 3, '4h': 3,
+  '1H': 2, '1h': 2,
+  '15m': 1, '15M': 1,
+  '5m': 0.5, '5M': 0.5,
 }
 
 function getWeight(tf: string): number {

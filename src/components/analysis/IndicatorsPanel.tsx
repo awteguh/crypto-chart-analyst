@@ -88,13 +88,15 @@ export function IndicatorsPanel({ readings }: Props) {
   const bollinger = readings.bollinger ?? null
   const volume = readings.volume ?? null
   const ema = Array.isArray(readings.ema) ? readings.ema : []
+  const stochastic = readings.stochastic ?? null
 
   const hasAny =
     rsi !== null ||
     macd !== null ||
     bollinger !== null ||
     volume !== null ||
-    ema.length > 0
+    ema.length > 0 ||
+    stochastic !== null
 
   if (!hasAny) return null
 
@@ -189,6 +191,31 @@ export function IndicatorsPanel({ readings }: Props) {
                 EMA {e.period} — {e.relation}
               </span>
             ))}
+          </div>
+        </Row>
+      )}
+
+      {stochastic !== null && (
+        <Row label="Stoch">
+          <div className="flex flex-col items-end gap-0.5">
+            <span
+              className={`text-[10px] font-semibold ${
+                stochastic.zone === 'Oversold'
+                  ? 'text-emerald-400'
+                  : stochastic.zone === 'Overbought'
+                  ? 'text-rose-400'
+                  : 'text-slate-400'
+              }`}
+            >
+              {stochastic.k_value !== null ? `%K ${stochastic.k_value}` : stochastic.zone}
+            </span>
+            <span className={`text-[9px] font-semibold ${
+              stochastic.signal.includes('Bullish') ? 'text-emerald-400/80'
+              : stochastic.signal.includes('Bearish') ? 'text-rose-400/80'
+              : 'text-slate-500'
+            }`}>
+              {stochastic.signal}
+            </span>
           </div>
         </Row>
       )}

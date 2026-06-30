@@ -10,6 +10,11 @@ interface SignalItem {
 }
 
 export function SignalSummary({ signal }: { signal: TradeSignal }) {
+  const isEmpty = [signal.entry, signal.stop_loss, signal.take_profit].every(
+    v => !v || v === '-'
+  )
+  if (isEmpty) return null
+
   const items: SignalItem[] = [
     {
       label: 'ENTRY',

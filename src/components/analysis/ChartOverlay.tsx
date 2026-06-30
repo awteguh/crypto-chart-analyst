@@ -52,8 +52,8 @@ function isAreaPattern(label: string): boolean {
     lower.includes('wedge') ||
     lower.includes('channel') ||
     lower.includes('flag') ||
-    lower.includes('pennant') ||
-    lower.includes('trendline')
+    lower.includes('pennant')
+    // 'trendline' sengaja tidak termasuk — satu garis trendline bukan area tertutup
   )
 }
 

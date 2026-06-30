@@ -2,7 +2,8 @@
 
 export function buildSingleChartPrompt(timeframe?: string): string {
   const tfLabel = timeframe ? `Timeframe: ${timeframe}.` : ''
-  return `Kamu adalah analis teknikal crypto profesional tier-1. ${tfLabel}
+  return `Kamu adalah analis teknikal crypto profesional tier-1 yang spesialis futures trading dengan leverage (LONG dan SHORT). ${tfLabel}
+Analisis ini digunakan trader untuk posisi futures — berikan sinyal yang TEPAT dan KONKRET termasuk arah posisi (LONG/SHORT), entry, SL, TP.
 
 Kembalikan HANYA JSON valid (tanpa markdown, tanpa komentar, tanpa teks lain).
 
@@ -12,7 +13,7 @@ LANGKAH 1 — IDENTIFIKASI CHART PATTERN (WAJIB, LAKUKAN DULU)
 
 Lihat struktur pergerakan harga dari kiri ke kanan. Identifikasi pola yang TERBENTUK:
 
-BULLISH PATTERN:
+BULLISH PATTERN (→ posisi LONG):
   Inverse Head & Shoulders  : 3 lembah — tengah paling dalam, dua sisi lebih dangkal + neckline
   Double Bottom             : 2 lembah di level yang sama + neckline resistance
   Triple Bottom             : 3 lembah di level yang sama
@@ -22,8 +23,12 @@ BULLISH PATTERN:
   Cup & Handle              : bentuk mangkuk bulat + handle kecil di kanan
   Hammer / Morning Star     : candle reversal di area low
   Bullish Engulfing         : candle hijau besar menelan candle merah sebelumnya
+  Higher Highs & Higher Lows: puncak dan lembah terus naik (uptrend struktur)
+  Bullish FVG               : celah harga yang belum terisi (gap bullish)
+  Change of Character (ChoCH) Bullish : struktur berubah dari downtrend ke uptrend
+  Break of Structure (BOS) Bullish : harga menembus swing high terakhir
 
-BEARISH PATTERN:
+BEARISH PATTERN (→ posisi SHORT):
   Head & Shoulders          : 3 puncak — tengah tertinggi (kepala), dua sisi lebih rendah (bahu) + neckline
   Double Top                : 2 puncak di level yang sama + neckline support
   Triple Top                : 3 puncak di level yang sama
@@ -33,6 +38,9 @@ BEARISH PATTERN:
   Shooting Star / Evening Star : candle reversal di area high
   Bearish Engulfing         : candle merah besar menelan candle hijau sebelumnya
   Lower Lows & Lower Highs  : setiap puncak dan lembah lebih rendah dari sebelumnya (downtrend struktur)
+  Bearish FVG               : celah harga yang belum terisi (gap bearish)
+  Change of Character (ChoCH) Bearish : struktur berubah dari uptrend ke downtrend
+  Break of Structure (BOS) Bearish : harga menembus swing low terakhir
 
 NEUTRAL PATTERN:
   Symmetrical Triangle      : 2 trendline menyempit, arah breakout belum pasti
@@ -209,9 +217,9 @@ FORMAT JSON OUTPUT
     "stochastic": null
   },
   "signal": {
-    "entry": "deskripsi area entry — sebutkan level atau pattern yang menjadi dasar",
-    "stop_loss": "deskripsi stop loss — sebutkan level atau area spesifik",
-    "take_profit": "deskripsi take profit — sebutkan level atau target",
+    "entry": "LONG/SHORT — deskripsi entry dengan level harga jika terbaca (mis. 'SHORT entry break di bawah support 42.500 setelah konfirmasi bearish candle')",
+    "stop_loss": "SL di atas/bawah level kunci (mis. 'SL di atas swing high 43.200' untuk SHORT, 'SL di bawah swing low 41.800' untuk LONG)",
+    "take_profit": "TP di level berikutnya (mis. 'TP1 40.000 (support 4H), TP2 38.500 (major support)')",
     "risk_reward": "1:2"
   },
   "pump_probability": 30,

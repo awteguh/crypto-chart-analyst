@@ -110,13 +110,29 @@ export async function synthesizeMtfWithGemini(
   results: Partial<Record<string, AnalysisResult>>
 ): Promise<MtfSynthesis> {
   const ai = getClient()
+  const errors: string[] = []
 
-  const response = await ai.models.generateContent({
-    model: MODELS[0],
-    contents: [{ role: 'user', parts: [{ text: buildMtfSynthesisPrompt(results) }] }],
-    config: { responseMimeType: 'application/json', temperature: 0.1 },
-  })
+  for (const model of MODELS) {
+    if (isOnCooldown(model)) {
+      errors.push(`[${model}] cooldown — skip`)
+      continue
+    }
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: buildMtfSynthesisPrompt(results) }] }],
+        config: { responseMimeType: 'application/json', temperature: 0.1 },
+      })
+      const text = response.text ?? ''
+      return JSON.parse(extractJson(text)) as MtfSynthesis
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errors.push(`[${model}] ${msg}`)
+      const isRetryable = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('RESOURCE_EXHAUSTED')
+      if (isRetryable) setCooldown(model)
+      else break
+    }
+  }
 
-  const text = response.text ?? ''
-  return JSON.parse(extractJson(text)) as MtfSynthesis
+  throw new Error(errors.join(' | '))
 }

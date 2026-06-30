@@ -72,8 +72,12 @@ async function callOpenRouter(messages: object[]): Promise<string> {
       continue
     }
 
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30_000) // 30s timeout
+
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
@@ -89,6 +93,8 @@ async function callOpenRouter(messages: object[]): Promise<string> {
         // JSON diminta via prompt, parsing dilakukan manual di extractJson().
       }),
     })
+
+    clearTimeout(timeout)
 
     if (!response.ok) {
       const err = await response.text()

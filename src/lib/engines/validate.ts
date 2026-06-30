@@ -46,6 +46,13 @@ const BEARISH_PATTERNS = [
   'shooting star',
   'bearish harami',
   'dark cloud cover',
+  'lower lows', 'lower highs',        // downtrend structure
+  'bearish trendline',
+  'descending triangle',
+  'distribution',                      // Wyckoff distribution
+  'break of structure bearish', 'bos bearish',
+  'change of character bearish', 'choch bearish',
+  'bearish breaker', 'bearish fvg',
 ]
 
 // Pattern bullish yang kuat
@@ -65,6 +72,12 @@ const BULLISH_PATTERNS = [
   'hammer',
   'bullish harami',
   'piercing line',
+  'higher highs', 'higher lows',       // uptrend structure
+  'bullish trendline',
+  'accumulation',                       // Wyckoff accumulation
+  'break of structure bullish', 'bos bullish',
+  'change of character bullish', 'choch bullish',
+  'bullish breaker', 'bullish fvg',
 ]
 
 type Bias = 'bearish' | 'bullish' | 'neutral'
