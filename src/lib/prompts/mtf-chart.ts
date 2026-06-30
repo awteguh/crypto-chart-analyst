@@ -2,50 +2,110 @@
 
 import type { AnalysisResult } from '@/types/analysis'
 
-function formatIndicators(r: AnalysisResult): string {
-  const ind = r.indicator_readings
-  if (!ind) return '  Indikator: tidak tersedia'
-
-  const lines: string[] = []
-
-  if (ind.rsi) {
-    const div = ind.rsi.divergence ? ` | Divergence: ${ind.rsi.divergence}` : ''
-    lines.push(`  RSI: ${ind.rsi.value ?? '?'} (${ind.rsi.zone})${div}`)
-  }
-  if (ind.macd) {
-    lines.push(`  MACD: ${ind.macd.signal} | Histogram: ${ind.macd.histogram} | Line: ${ind.macd.macd_line}`)
-  }
-  if (ind.bollinger) {
-    const sq = ind.bollinger.squeeze ? ' [SQUEEZE]' : ''
-    lines.push(`  Bollinger: ${ind.bollinger.zone}${sq}`)
-  }
-  if (ind.volume) {
-    const conf = ind.volume.confirms_price ? 'confirm' : 'diverge'
-    lines.push(`  Volume: ${ind.volume.trend} (${conf})`)
-  }
-  if (ind.stochastic) {
-    lines.push(`  Stochastic: %K=${ind.stochastic.k_value ?? '?'} (${ind.stochastic.zone}) | ${ind.stochastic.signal}`)
-  }
-  if (ind.ema && ind.ema.length > 0) {
-    const emaStr = ind.ema.map(e => `EMA${e.period}: ${e.relation}`).join(', ')
-    lines.push(`  EMA: ${emaStr}`)
-  }
-
-  return lines.length > 0 ? lines.join('\n') : '  Indikator: tidak tersedia'
+// Bobot per timeframe — TF besar lebih dominan
+const TF_WEIGHT: Record<string, number> = {
+  '1D': 4, '4H': 3, '1H': 2, '15m': 1, '15M': 1, '5m': 0.5, '5M': 0.5,
 }
 
-function formatTimeframe(tf: string, r: AnalysisResult): string {
+function getWeight(tf: string): number {
+  return TF_WEIGHT[tf] ?? 1
+}
+
+/**
+ * Hitung weighted pump/dump probability dari semua TF di JavaScript.
+ * Hasilnya dikirim sebagai hint ke AI agar tidak salah hitung.
+ */
+function calcWeightedProbability(
+  entries: [string, AnalysisResult][]
+): { weightedPump: number; weightedDump: number; totalWeight: number } {
+  let pumpSum = 0
+  let dumpSum = 0
+  let totalWeight = 0
+
+  for (const [tf, r] of entries) {
+    const w = getWeight(tf)
+    pumpSum += r.pump_probability * w
+    dumpSum += r.dump_probability * w
+    totalWeight += w
+  }
+
+  if (totalWeight === 0) return { weightedPump: 50, weightedDump: 50, totalWeight: 0 }
+
+  return {
+    weightedPump: Math.round(pumpSum / totalWeight),
+    weightedDump: Math.round(dumpSum / totalWeight),
+    totalWeight,
+  }
+}
+
+function formatIndicators(r: AnalysisResult): string {
+  const ind = r.indicator_readings
+  const lines: string[] = []
+
+  // Gunakan indicators_detected (string ringkasan dari AI per-TF) jika tersedia
+  if (r.indicators_detected && r.indicators_detected.length > 0) {
+    lines.push(`  Indikator Terdeteksi:`)
+    r.indicators_detected.forEach(s => lines.push(`    • ${s}`))
+  }
+
+  // Tambah structured readings jika ada
+  if (ind) {
+    if (ind.rsi) {
+      const div = ind.rsi.divergence ? ` | Divergence: ${ind.rsi.divergence}` : ''
+      lines.push(`  RSI: ${ind.rsi.value ?? '?'} (${ind.rsi.zone})${div}`)
+    }
+    if (ind.macd) {
+      lines.push(`  MACD: ${ind.macd.signal} | Histogram: ${ind.macd.histogram} | Line: ${ind.macd.macd_line}`)
+    }
+    if (ind.bollinger) {
+      const sq = ind.bollinger.squeeze ? ' [SQUEEZE — siap breakout]' : ''
+      lines.push(`  Bollinger: ${ind.bollinger.zone}${sq}`)
+    }
+    if (ind.volume) {
+      const conf = ind.volume.confirms_price ? 'confirm' : 'diverge (sinyal lemah)'
+      lines.push(`  Volume: ${ind.volume.trend} (${conf})`)
+    }
+    if (ind.stochastic) {
+      lines.push(`  Stochastic: %K=${ind.stochastic.k_value ?? '?'} (${ind.stochastic.zone}) | ${ind.stochastic.signal}`)
+    }
+    if (ind.ema && ind.ema.length > 0) {
+      const emaStr = ind.ema.map(e => `EMA${e.period}: ${e.relation}`).join(', ')
+      lines.push(`  EMA: ${emaStr}`)
+    }
+  }
+
+  return lines.length > 0 ? lines.join('\n') : '  Indikator: tidak tersedia (rule-based fallback)'
+}
+
+function formatSR(r: AnalysisResult): string {
+  if (!r.support_resistance || r.support_resistance.length === 0) return ''
+  const srLines = r.support_resistance
+    .map(s => `    ${s.type} (${s.strength}): ${s.description}`)
+    .join('\n')
+  return `  Support/Resistance:\n${srLines}`
+}
+
+function formatSignal(r: AnalysisResult): string {
+  const s = r.signal
+  if (!s || s.entry === '-') return ''
+  return `  Signal: Entry=${s.entry} | SL=${s.stop_loss} | TP=${s.take_profit} | R:R=${s.risk_reward}`
+}
+
+function formatTimeframe(tf: string, r: AnalysisResult, weight: number): string {
   const patterns = r.patterns.length > 0
     ? r.patterns.map(p => `${p.name} (${p.bias}, ${p.location}, ${p.confidence}%)`).join(', ')
     : 'Tidak ada pattern'
 
+  const sr = formatSR(r)
+  const signal = formatSignal(r)
+
   return `
-━━━ ${tf} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━ ${tf} [bobot ${weight}x] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Trend   : ${r.trend}
   Bias    : ${r.next_candle_bias}
   Pump    : ${r.pump_probability}% | Dump: ${r.dump_probability}%
   Pattern : ${patterns}
-${formatIndicators(r)}
+${formatIndicators(r)}${sr ? '\n' + sr : ''}${signal ? '\n' + signal : ''}
   Summary : ${r.summary}`
 }
 
@@ -53,54 +113,63 @@ export function buildMtfSynthesisPrompt(
   results: Partial<Record<string, AnalysisResult>>
 ): string {
   const entries = Object.entries(results).filter(([, r]) => r != null) as [string, AnalysisResult][]
-  const tfBlock = entries.map(([tf, r]) => formatTimeframe(tf, r)).join('\n')
+  const { weightedPump, weightedDump } = calcWeightedProbability(entries)
 
-  return `Kamu adalah analis teknikal crypto senior tier-1 yang ahli membaca konfluensi multi-timeframe.
+  const tfBlock = entries
+    .sort((a, b) => getWeight(b[0]) - getWeight(a[0])) // urut TF besar dulu
+    .map(([tf, r]) => formatTimeframe(tf, r, getWeight(tf)))
+    .join('\n')
 
-Berikut adalah hasil analisis LENGKAP per timeframe, termasuk semua indikator teknikal:
+  return `Kamu adalah analis teknikal crypto senior tier-1 yang ahli konfluensi multi-timeframe.
+
+Berikut data LENGKAP per timeframe (sudah diurutkan dari TF terbesar ke terkecil):
 ${tfBlock}
 
 ═══════════════════════════════════════════════════════════════
-METODOLOGI SINTESIS MTF
+DATA PRE-KALKULASI (gunakan sebagai dasar probabilitas)
 ═══════════════════════════════════════════════════════════════
 
-LANGKAH 1 — BOBOT TIMEFRAME
-Timeframe BESAR memiliki bobot LEBIH TINGGI:
-  1D  = bobot 4x | 4H = bobot 3x | 1H = bobot 2x | 15M = bobot 1x | 5M = bobot 0.5x
+Weighted pump probability (dihitung dari bobot TF): ${weightedPump}%
+Weighted dump probability: ${weightedDump}%
 
-LANGKAH 2 — HITUNG SKOR PUMP vs DUMP
-Untuk setiap TF, kontribusi berbobot:
-  pump_weighted[TF] = pump_probability[TF] × bobot[TF]
-  dump_weighted[TF] = dump_probability[TF] × bobot[TF]
+Sesuaikan ±5-15 poin dari nilai di atas berdasarkan:
+  +15 PUMP  : RSI Bullish Divergence di 1H atau 4H atau 1D
+  +15 DUMP  : RSI Bearish Divergence di 1H atau 4H atau 1D
+  +12 PUMP  : MACD Bullish Crossover di 4H atau 1D
+  +12 DUMP  : MACD Bearish Crossover di 4H atau 1D
+  +10 PUMP  : RSI < 20 di 2+ TF sekaligus
+  +10 DUMP  : RSI > 80 di 2+ TF sekaligus
+  +8 PUMP   : Semua TF agree PUMP (tanpa konflik)
+  +8 DUMP   : Semua TF agree DUMP (tanpa konflik)
+  +5 PUMP   : Volume spike confirm bullish di TF besar
+  +5 DUMP   : Volume spike confirm bearish di TF besar
+  -5        : Bollinger Squeeze (belum bisa tentukan arah)
 
-Skor bonus dari konfluensi indikator (tambahkan ke raw score):
-  Semua TF agree arah yang sama          → +10 ke arah itu
-  RSI Divergence di salah satu TF        → +8 ke arah reversal
-  MACD Crossover di 1D atau 4H           → +12 ke arah crossover
-  RSI Extreme (<20 atau >80) di 2+ TF   → +10 ke arah yang sesuai
-  Pattern major di 1D (H&S, Double Top/Bottom, Wedge) → +10 ke arah pattern
-  Bollinger Squeeze di 4H atau 1D        → tidak ada bonus (tunggu breakout)
-  Volume spike confirm di TF besar       → +5 ke arah yang dikonfirmasi
+Klem akhir: min 10, max 90. dump = 100 - pump.
 
-Formula akhir:
-  total_bobot = jumlah semua bobot TF yang ada
-  raw_pump = (sum pump_weighted / total_bobot) + bonus_pump - bonus_dump
-  pump_probability = max(10, min(90, round(raw_pump)))
-  dump_probability = 100 - pump_probability
+═══════════════════════════════════════════════════════════════
+PANDUAN KONFLUENSI & KONFLIK
+═══════════════════════════════════════════════════════════════
 
-LANGKAH 3 — IDENTIFIKASI KONFLUENSI & KONFLIK
-Konfluensi (faktor yang SAMA arahnya di 2+ TF):
-  Contoh: "RSI Oversold di 1H dan 4H", "MACD Bullish Crossover di 4H dan 1D"
+Konfluensi (sebutkan indikator KONKRET yang sepakat di 2+ TF):
+  ✓ "RSI Oversold di 1H (28.4) dan 4H (31.2) — potensi reversal bullish"
+  ✓ "MACD Bullish Crossover di 4H dan 1D — momentum bullish kuat"
+  ✓ "EMA 50 bertindak sebagai support di 1H dan 4H — area beli valid"
 
-Konflik (faktor yang BERTENTANGAN antar TF):
-  Contoh: "15M DUMP tapi 4H dan 1D PUMP → koreksi sementara dalam tren naik"
-  Contoh: "RSI Overbought di 1D meski semua TF kecil masih bullish → risiko reversal"
+Konflik (sebutkan TF & indikator yang BERTENTANGAN):
+  ✗ "15M Bearish (MACD turun, RSI 60) vs 4H Bullish — koreksi jangka pendek"
+  ✗ "RSI 1D mendekati Overbought (68) — ruang naik mulai terbatas"
+  ✗ "Pattern Bearish (Rising Wedge) di 4H vs Bullish keseluruhan — waspadai breakout bawah"
 
-LANGKAH 4 — RECOMMENDED SIGNAL
-  Entry: Berdasarkan TF terkecil yang align dengan tren TF besar
-  Stop Loss: Di bawah support TF medium (1H atau 4H)
-  Take Profit: Target resistance TF besar atau Upper Bollinger 4H/1D
-  R:R: Hitung dari jarak entry-SL vs entry-TP
+═══════════════════════════════════════════════════════════════
+PANDUAN RECOMMENDED SIGNAL (berdasarkan data SR dan signal per TF)
+═══════════════════════════════════════════════════════════════
+
+Gunakan level Support/Resistance dan Signal dari data di atas untuk menentukan:
+- Entry: TF kecil yang align dengan tren TF besar. Sebutkan level konkret jika ada.
+- Stop Loss: Di bawah support terkuat dari 1H atau 4H. Sebutkan level atau EMA.
+- Take Profit: Resistance berikutnya dari 4H atau 1D. Sebutkan level atau target.
+- R:R: Hitung dari jarak entry-SL vs entry-TP (minimal 1:1.5 untuk layak trade).
 
 ═══════════════════════════════════════════════════════════════
 FORMAT OUTPUT (HANYA JSON VALID, TANPA MARKDOWN)
@@ -113,27 +182,30 @@ FORMAT OUTPUT (HANYA JSON VALID, TANPA MARKDOWN)
   "dump_probability": 28,
   "next_candle_bias": "PUMP" | "DUMP" | "NEUTRAL",
   "confluences": [
-    "RSI Oversold (<30) di 1H dan 4H — tekanan beli dari dua TF",
-    "MACD Bullish Crossover di 4H — momentum bullish mendominasi"
+    "RSI Oversold (28.4) di 1H dan (31.2) di 4H — potensi reversal ke atas",
+    "MACD Bullish Crossover di 4H — histogram positif dan menguat"
   ],
   "conflicts": [
-    "15M masih bearish bias — entry dini berisiko, tunggu konfirmasi"
+    "15M masih Bearish (RSI 58, MACD turun) — hindari entry terlalu dini",
+    "RSI 1D mendekati 65 — ruang naik mulai terbatas"
   ],
-  "summary": "Ringkasan 3-4 kalimat Bahasa Indonesia yang WAJIB menyebut: (1) indikator dominan yang menentukan bias (sebut nama & nilai konkret), (2) konfluensi antar TF, (3) risiko konflik jika ada, (4) rekomendasi tindakan",
+  "summary": "Ringkasan 3-4 kalimat WAJIB menyebut: (1) indikator konkret yang dominan dengan nilai/status-nya, (2) konfluensi antar TF, (3) konflik atau risiko jika ada, (4) rekomendasi tindakan yang jelas",
   "recommended_signal": {
-    "entry": "Contoh: Entry buy di break resistance 42.500 setelah 15M MACD bullish crossover",
-    "stop_loss": "Contoh: SL di bawah EMA 50 (4H) atau support 40.000",
-    "take_profit": "Contoh: TP1 45.000 (resistance 4H), TP2 48.500 (Upper BB 1D)",
+    "entry": "Entry buy di break 42.500 (resistance 4H) dengan konfirmasi 15M MACD bullish crossover",
+    "stop_loss": "SL di bawah EMA 50 (4H) di area 40.000",
+    "take_profit": "TP1 45.000 (resistance 1D), TP2 48.500 (Upper BB 1D)",
     "risk_reward": "1:2.5"
   }
 }
 
-VALIDASI WAJIB:
+VALIDASI WAJIB SEBELUM OUTPUT:
 ✓ pump_probability + dump_probability = 100
+✓ pump_probability harus dekat ${weightedPump}% (±15 poin dari bonus/penalti di atas)
 ✓ next_candle_bias: gap > 10 → PUMP/DUMP, ≤ 10 → NEUTRAL
 ✓ overall_trend: Bullish jika pump > 60, Bearish jika dump > 60, Sideways 40-60
 ✓ confidence: High jika TF bobot ≥ 75% agree, Medium jika 50-74%, Low jika < 50%
-✓ summary WAJIB sebut minimal 2 indikator konkret (nama + nilai/status)
-✓ confluences dan conflicts harus diisi sesuai data yang ada (bukan array kosong jika ada 2+ TF)
+✓ confluences & conflicts WAJIB menyebut nama indikator dan nilai konkret (bukan generik)
+✓ summary WAJIB sebut minimal 2 indikator dengan nilai nyata
+✓ recommended_signal entry/SL/TP harus konkret (level atau EMA/BB yang disebutkan dalam data)
 `
 }
