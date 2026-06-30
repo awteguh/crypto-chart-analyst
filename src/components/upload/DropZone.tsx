@@ -56,7 +56,15 @@ export function DropZone({ onFile, label = 'Drop chart di sini atau klik untuk u
       onPaste={handlePaste}
       onClick={() => inputRef.current?.click()}
       tabIndex={0}
-      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="
+        border-2 border-dashed border-amber-500/25
+        rounded-2xl p-10 text-center cursor-pointer
+        bg-amber-500/[0.03]
+        hover:border-amber-500/50 hover:bg-amber-500/[0.06]
+        hover:shadow-[0_0_24px_rgba(245,158,11,0.1)]
+        transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-amber-500/40
+      "
     >
       <input
         ref={inputRef}
@@ -68,9 +76,14 @@ export function DropZone({ onFile, label = 'Drop chart di sini atau klik untuk u
           if (file) handleFile(file)
         }}
       />
-      <p className="text-4xl mb-2">📊</p>
-      <p className="text-gray-600 dark:text-gray-300 text-sm">{label}</p>
-      <p className="text-gray-400 text-xs mt-1">PNG, JPG, WEBP · Maks 10MB · Ctrl+V untuk paste</p>
+      <p className="text-5xl mb-3" style={{ filter: 'drop-shadow(0 0 14px rgba(245,158,11,0.5))' }}>
+        📊
+      </p>
+      <p className="text-[#e2e8f0] font-semibold mb-1">{label}</p>
+      <p className="text-slate-500 text-xs">PNG, JPG, WEBP · Maks 10MB</p>
+      <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-full text-xs">
+        <span>⌨️</span> Ctrl+V untuk paste langsung
+      </div>
     </div>
   )
 }

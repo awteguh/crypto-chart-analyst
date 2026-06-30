@@ -7,13 +7,13 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'info' }: BadgeProps) {
   const variants = {
-    bullish: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    bearish: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-    neutral: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-    info: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    bullish: 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400',
+    bearish: 'bg-red-500/15 border border-red-500/30 text-red-400',
+    neutral: 'bg-white/[0.06] border border-white/10 text-slate-400',
+    info:    'bg-cyan-500/10 border border-cyan-500/25 text-cyan-400',
   }
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${variants[variant]}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${variants[variant]}`}>
       {children}
     </span>
   )
