@@ -84,6 +84,7 @@ async function callOpenRouter(messages: object[]): Promise<string> {
       body: JSON.stringify({
         model,
         messages,
+        temperature: 0.1,
         // Catatan: response_format tidak didukung semua model free tier.
         // JSON diminta via prompt, parsing dilakukan manual di extractJson().
       }),

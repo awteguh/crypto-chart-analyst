@@ -18,6 +18,7 @@ export async function analyzeWithClaude(
   const message = await client.messages.create({
     model: 'claude-opus-4-8',
     max_tokens: 2048,
+    temperature: 0.1,
     messages: [
       {
         role: 'user',
@@ -57,6 +58,7 @@ export async function synthesizeMtfWithClaude(
   const message = await client.messages.create({
     model: 'claude-opus-4-8',
     max_tokens: 2048,
+    temperature: 0.1,
     messages: [
       {
         role: 'user',

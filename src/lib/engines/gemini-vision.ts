@@ -74,7 +74,7 @@ export async function analyzeWithGemini(
             ],
           },
         ],
-        config: { responseMimeType: 'application/json' },
+        config: { responseMimeType: 'application/json', temperature: 0.1 },
       })
 
       const text = response.text ?? ''
@@ -114,7 +114,7 @@ export async function synthesizeMtfWithGemini(
   const response = await ai.models.generateContent({
     model: MODELS[0],
     contents: [{ role: 'user', parts: [{ text: buildMtfSynthesisPrompt(results) }] }],
-    config: { responseMimeType: 'application/json' },
+    config: { responseMimeType: 'application/json', temperature: 0.1 },
   })
 
   const text = response.text ?? ''
