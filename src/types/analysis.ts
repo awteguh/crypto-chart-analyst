@@ -61,6 +61,56 @@ export interface SRLevel {
   description: string
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Structured indicator readings — nilai nyata yang dibaca AI dari chart image
+// ──────────────────────────────────────────────────────────────────────────────
+
+export type MacdSignal = 'Bullish Crossover' | 'Bearish Crossover' | 'Bullish' | 'Bearish' | 'Neutral'
+export type RsiZone   = 'Overbought' | 'Oversold' | 'Neutral'
+export type BbZone    = 'Above Upper Band' | 'Near Upper Band' | 'Mid Band' | 'Near Lower Band' | 'Below Lower Band'
+
+export interface RsiReading {
+  value: number | null         // angka RSI 0-100, null jika tidak terdeteksi
+  zone: RsiZone
+  divergence: 'Bullish' | 'Bearish' | null
+}
+
+export interface MacdReading {
+  signal: MacdSignal
+  histogram: 'Positive' | 'Negative' | 'Zero'
+  macd_line: 'Above Signal' | 'Below Signal' | 'Crossing'
+}
+
+export interface BollingerReading {
+  zone: BbZone
+  squeeze: boolean             // true = band menyempit (volatilitas rendah)
+}
+
+export interface VolumeReading {
+  trend: 'Increasing' | 'Decreasing' | 'Spike' | 'Low' | 'Normal'
+  confirms_price: boolean      // true = volume confirm pergerakan harga
+}
+
+export interface EmaReading {
+  period: number               // mis. 20, 50, 200
+  relation: 'Price Above' | 'Price Below' | 'Price Crossing'
+}
+
+export interface StochasticReading {
+  k_value: number | null
+  zone: 'Oversold' | 'Overbought' | 'Neutral'
+  signal: 'Bullish Crossover' | 'Bearish Crossover' | 'Bullish' | 'Bearish' | 'Neutral'
+}
+
+export interface IndicatorReadings {
+  rsi:        RsiReading | null
+  macd:       MacdReading | null
+  bollinger:  BollingerReading | null
+  volume:     VolumeReading | null
+  ema:        EmaReading[]
+  stochastic: StochasticReading | null
+}
+
 export interface TradeSignal {
   entry: string
   stop_loss: string
@@ -74,6 +124,7 @@ export interface AnalysisResult {
   patterns: Pattern[]
   support_resistance: SRLevel[]
   indicators_detected: string[]
+  indicator_readings: IndicatorReadings | null // nilai terstruktur dari setiap indikator
   signal: TradeSignal
   pump_probability: number // 0-100
   dump_probability: number // 0-100
