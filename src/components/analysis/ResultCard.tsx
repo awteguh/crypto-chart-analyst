@@ -9,6 +9,7 @@ import { SupportResistance } from './SupportResistance'
 import { SignalSummary } from './SignalSummary'
 import { ChartOverlayView } from './ChartOverlay'
 import { PatternReference } from './PatternReference'
+import { IndicatorsPanel } from './IndicatorsPanel'
 
 interface ResultCardProps {
   result: AnalysisResult
@@ -83,7 +84,15 @@ export function ResultCard({ result, imageUrl }: ResultCardProps) {
       {/* Diagram referensi pattern */}
       <PatternReference patterns={result.patterns} />
 
-      {/* Indicators */}
+      {/* Indikator teknikal terstruktur (RSI / MACD / BB / Volume / EMA) */}
+      {result.indicator_readings && (
+        <>
+          <Divider />
+          <IndicatorsPanel readings={result.indicator_readings} />
+        </>
+      )}
+
+      {/* Ringkasan indikator (string badges) */}
       {result.indicators_detected.length > 0 && (
         <>
           <Divider />

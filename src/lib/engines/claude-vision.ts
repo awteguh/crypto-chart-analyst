@@ -17,7 +17,7 @@ export async function analyzeWithClaude(
 ): Promise<AnalysisResult> {
   const message = await client.messages.create({
     model: 'claude-opus-4-8',
-    max_tokens: 1024,
+    max_tokens: 2048,
     messages: [
       {
         role: 'user',
@@ -56,7 +56,7 @@ export async function synthesizeMtfWithClaude(
 ): Promise<MtfSynthesis> {
   const message = await client.messages.create({
     model: 'claude-opus-4-8',
-    max_tokens: 1024,
+    max_tokens: 2048,
     messages: [
       {
         role: 'user',

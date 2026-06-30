@@ -48,6 +48,7 @@ export async function analyzeWithRuleBased(
     patterns: [],
     support_resistance: [],
     indicators_detected: [],
+    indicator_readings: null,
     signal: {
       entry: 'Analisis terbatas — gunakan Claude Vision untuk sinyal akurat',
       stop_loss: '-',
