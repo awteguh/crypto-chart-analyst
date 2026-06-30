@@ -15,40 +15,45 @@ interface ResultCardProps {
   imageUrl?: string
 }
 
+function Divider() {
+  return <div className="border-t border-white/[0.05] my-3" />
+}
+
 export function ResultCard({ result, imageUrl }: ResultCardProps) {
   const trendVariant =
     result.trend === 'Bullish' ? 'bullish' : result.trend === 'Bearish' ? 'bearish' : 'neutral'
 
+  const engineLabel =
+    result.engine_used === 'gemini-vision'
+      ? '✦ Gemini AI'
+      : result.engine_used === 'openrouter-vision'
+      ? '✦ OpenRouter AI'
+      : result.engine_used === 'claude-vision'
+      ? '✦ Claude AI'
+      : '⚠️ Fallback'
+
   return (
-    <Card className="space-y-4">
+    <Card className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-gray-700 dark:text-gray-200">
+          <span className="font-bold text-[#e2e8f0]">
             {result.timeframe !== 'unknown' ? `Chart ${result.timeframe}` : 'Chart'}
           </span>
           <Badge variant={trendVariant}>{result.trend}</Badge>
         </div>
-        {result.engine_used === 'rule-based' ? (
-          <Badge variant="neutral">⚠️ Fallback</Badge>
-        ) : (
-          <Badge variant="info">
-            🤖 {
-              result.engine_used === 'gemini-vision' ? 'Gemini AI'
-              : result.engine_used === 'openrouter-vision' ? 'OpenRouter AI'
-              : 'Claude AI'
-            }
-          </Badge>
-        )}
+        <Badge variant={result.engine_used === 'rule-based' ? 'neutral' : 'info'}>
+          {engineLabel}
+        </Badge>
       </div>
 
-      {/* Preview gambar — dengan overlay garis pattern jika tersedia */}
+      {/* Preview gambar */}
       {imageUrl &&
         (result.overlay ? (
           <ChartOverlayView imageUrl={imageUrl} overlay={result.overlay} alt={`Chart ${result.timeframe}`} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="Chart" className="w-full rounded-lg object-cover max-h-48" />
+          <img src={imageUrl} alt="Chart" className="w-full rounded-xl object-cover max-h-48" />
         ))}
 
       {/* Pump/Dump Meter */}
@@ -60,16 +65,19 @@ export function ResultCard({ result, imageUrl }: ResultCardProps) {
 
       {/* Patterns */}
       {result.patterns.length > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">
-            Pattern Terdeteksi
-          </h4>
-          <div className="flex flex-wrap gap-1">
-            {result.patterns.map((p, i) => (
-              <PatternBadge key={i} pattern={p} />
-            ))}
+        <>
+          <Divider />
+          <div>
+            <h4 className="text-[9px] font-bold tracking-[1.5px] uppercase text-slate-600 mb-2">
+              Pattern Terdeteksi
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {result.patterns.map((p, i) => (
+                <PatternBadge key={i} pattern={p} />
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Diagram referensi pattern */}
@@ -77,28 +85,37 @@ export function ResultCard({ result, imageUrl }: ResultCardProps) {
 
       {/* Indicators */}
       {result.indicators_detected.length > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">
-            Indikator
-          </h4>
-          <div className="flex flex-wrap gap-1">
-            {result.indicators_detected.map((ind, i) => (
-              <Badge key={i} variant="info">{ind}</Badge>
-            ))}
+        <>
+          <Divider />
+          <div>
+            <h4 className="text-[9px] font-bold tracking-[1.5px] uppercase text-slate-600 mb-2">
+              Indikator
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {result.indicators_detected.map((ind, i) => (
+                <Badge key={i} variant="info">{ind}</Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Support/Resistance */}
-      <SupportResistance levels={result.support_resistance} />
+      {result.support_resistance.length > 0 && (
+        <>
+          <Divider />
+          <SupportResistance levels={result.support_resistance} />
+        </>
+      )}
 
       {/* Signal */}
+      <Divider />
       <SignalSummary signal={result.signal} />
 
-      {/* Summary */}
-      <div className="text-sm text-gray-600 dark:text-gray-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-        <span className="font-semibold">📝 Analisis AI: </span>
-        {result.summary}
+      {/* AI Summary */}
+      <div className="bg-cyan-500/[0.05] border border-cyan-500/15 rounded-xl p-3 mt-1">
+        <span className="font-semibold text-cyan-400">📝 Analisis AI: </span>
+        <span className="text-slate-400 text-sm leading-relaxed">{result.summary}</span>
       </div>
     </Card>
   )

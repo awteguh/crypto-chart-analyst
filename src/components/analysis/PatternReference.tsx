@@ -85,13 +85,18 @@ function findDiagram(name: string): Diagram | null {
   return DIAGRAMS.find((d) => d.match(lower)) ?? null
 }
 
+function lineColor(bias: 'Bullish' | 'Bearish' | 'Neutral'): string {
+  if (bias === 'Bullish') return '#10b981'  // emerald
+  if (bias === 'Bearish') return '#ef4444'  // red
+  return '#f59e0b'                           // amber (neutral)
+}
+
 function PatternDiagram({ pattern }: { pattern: Pattern }) {
   const diagram = findDiagram(pattern.name)
-  const stroke =
-    pattern.bias === 'Bullish' ? '#16a34a' : pattern.bias === 'Bearish' ? '#dc2626' : '#eab308'
+  const stroke = lineColor(pattern.bias ?? 'Neutral')
 
   return (
-    <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+    <div className="flex flex-col items-center gap-1 p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
       <svg viewBox="0 0 100 100" className="w-full h-20" preserveAspectRatio="xMidYMid meet">
         {diagram ? (
           <>
@@ -117,7 +122,7 @@ function PatternDiagram({ pattern }: { pattern: Pattern }) {
           </>
         ) : (
           // Pattern tidak punya diagram khusus → tampilkan garis netral
-          <text x="50" y="55" textAnchor="middle" fontSize="10" fill="#9ca3af">
+          <text x="50" y="55" textAnchor="middle" fontSize="10" fill="#475569">
             {pattern.name}
           </text>
         )}
@@ -135,7 +140,7 @@ function PatternDiagram({ pattern }: { pattern: Pattern }) {
           </marker>
         </defs>
       </svg>
-      <span className="text-[10px] font-semibold text-center text-gray-700 dark:text-gray-300 leading-tight">
+      <span className="text-[10px] font-semibold text-center text-slate-400 leading-tight">
         {pattern.name}
       </span>
     </div>
@@ -147,7 +152,7 @@ export function PatternReference({ patterns }: { patterns: Pattern[] }) {
 
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
+      <h4 className="text-[9px] font-bold tracking-[1.5px] uppercase text-slate-600 mb-2">
         Referensi Pattern
       </h4>
       <div className="grid grid-cols-3 gap-2">

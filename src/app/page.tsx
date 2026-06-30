@@ -96,55 +96,67 @@ export default function Home() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-          📊 Crypto Chart Analyst
+      <div className="text-center mb-8 pt-2">
+        {/* Logo pill */}
+        <div className="inline-flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-1.5 mb-4 backdrop-blur-sm">
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)', boxShadow: '0 0 10px rgba(245,158,11,0.4)' }}>
+            📊
+          </div>
+          <span className="text-xs font-semibold text-[#e2e8f0]">Crypto Chart Analyst</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-live"
+            style={{ boxShadow: '0 0 6px rgba(52,211,153,0.8)' }} />
+        </div>
+
+        {/* Judul gradient */}
+        <h1 className="text-4xl font-black tracking-tight mb-2"
+          style={{ background: 'linear-gradient(90deg, #f59e0b 0%, #f97316 45%, #06b6d4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          AI Chart Analyst
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Upload screenshot chart crypto — AI mendeteksi pattern & prediksi pump/dump
-        </p>
-        <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
-          by{' '}
-          <span className="font-semibold text-blue-500 dark:text-blue-400">AwTeguh</span>
+
+        <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-1">
+          <span>Deteksi Pattern</span>
+          <span className="text-slate-700">·</span>
+          <span>Pump/Dump Prediction</span>
+          <span className="text-slate-700">·</span>
+          <span>Multi-Timeframe</span>
+        </div>
+        <p className="text-xs text-slate-700">
+          by <span className="text-amber-500 font-semibold">AwTeguh</span>
         </p>
       </div>
 
       {/* Fallback Warning */}
       {usedFallback && (
-        <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
+        <div className="mb-4 p-3 bg-amber-500/[0.08] border border-amber-500/20 rounded-xl text-amber-400 text-sm">
           ⚠️ Menggunakan analisis sederhana (rule-based) — garis pattern tidak tersedia.
-          Untuk deteksi pattern lengkap, set <code>GEMINI_API_KEY</code> (gratis) di{' '}
-          <code>.env.local</code>. Dapatkan di{' '}
-          <a
-            href="https://aistudio.google.com/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline font-semibold"
-          >
-            aistudio.google.com/apikey
+          Set <code className="bg-white/10 px-1 rounded text-xs">GEMINI_API_KEY</code> di{' '}
+          <code className="bg-white/10 px-1 rounded text-xs">.env.local</code> untuk analisis AI lengkap.{' '}
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"
+            className="underline font-semibold text-amber-300">
+            Dapatkan gratis
           </a>
-          , lalu restart server.
         </div>
       )}
 
       {/* Mode Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-1 mb-6 bg-white/[0.03] border border-white/[0.06] rounded-xl p-1">
         <button
           onClick={() => handleModeChange('single')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
             mode === 'single'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/15 border border-amber-500/30 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]'
+              : 'text-slate-500 hover:text-slate-300'
           }`}
         >
           📊 Single Chart
         </button>
         <button
           onClick={() => handleModeChange('mtf')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
             mode === 'mtf'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/15 border border-amber-500/30 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]'
+              : 'text-slate-500 hover:text-slate-300'
           }`}
         >
           📈 Multi-Timeframe (MTF)
@@ -265,18 +277,14 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <div className="text-center mt-8 space-y-1">
-        <p className="text-xs text-gray-400 dark:text-gray-600">
+      <div className="text-center mt-8 space-y-1 border-t border-white/[0.04] pt-6">
+        <p className="text-xs text-slate-700">
           ⚠️ Hanya untuk referensi teknikal. Bukan financial advice.
         </p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">
+        <p className="text-xs text-slate-700">
           Made with ❤️ by{' '}
-          <a
-            href="https://github.com/awteguh"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-blue-500 dark:text-blue-400 hover:underline"
-          >
+          <a href="https://github.com/awteguh" target="_blank" rel="noopener noreferrer"
+            className="text-amber-500 font-semibold hover:text-amber-400 transition-colors">
             AwTeguh
           </a>
         </p>
