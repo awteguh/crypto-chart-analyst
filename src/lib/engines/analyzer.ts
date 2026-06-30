@@ -64,16 +64,6 @@ export async function analyzeChart(
   const base64 = buffer.toString('base64')
   const engineErrors: string[] = []
 
-  if (process.env.GEMINI_API_KEY) {
-    try {
-      return await analyzeWithGemini(base64, effectiveMime, timeframe)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.warn('[analyzer] Gemini Vision gagal:', msg)
-      engineErrors.push(`Gemini: ${msg}`)
-    }
-  }
-
   if (process.env.OPENROUTER_API_KEY) {
     try {
       return await analyzeWithOpenRouter(base64, effectiveMime, timeframe)
@@ -81,6 +71,16 @@ export async function analyzeChart(
       const msg = err instanceof Error ? err.message : String(err)
       console.warn('[analyzer] OpenRouter Vision gagal:', msg)
       engineErrors.push(`OpenRouter: ${msg}`)
+    }
+  }
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      return await analyzeWithGemini(base64, effectiveMime, timeframe)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn('[analyzer] Gemini Vision gagal:', msg)
+      engineErrors.push(`Gemini: ${msg}`)
     }
   }
 

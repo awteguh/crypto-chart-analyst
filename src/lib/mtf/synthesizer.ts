@@ -3,6 +3,7 @@
 import type { AnalysisResult, MtfSynthesis } from '@/types/analysis'
 import { synthesizeMtfWithClaude } from '@/lib/engines/claude-vision'
 import { synthesizeMtfWithGemini } from '@/lib/engines/gemini-vision'
+import { synthesizeMtfWithOpenRouter } from '@/lib/engines/openrouter-vision'
 import { synthesizeMtfRuleBased } from '@/lib/engines/rule-based'
 
 export async function synthesizeMtf(
@@ -17,7 +18,15 @@ export async function synthesizeMtf(
     return synthesizeMtfRuleBased(results)
   }
 
-  // Prioritas: Gemini → Claude → rule-based
+  // Prioritas: OpenRouter → Gemini → Claude → rule-based
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      return await synthesizeMtfWithOpenRouter(results)
+    } catch (err) {
+      console.warn('[synthesizer] OpenRouter MTF synthesis gagal:', err)
+    }
+  }
+
   if (process.env.GEMINI_API_KEY) {
     try {
       return await synthesizeMtfWithGemini(results)
